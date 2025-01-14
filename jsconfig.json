@@ -1,0 +1,19 @@
+{
+    "files": [],
+    "references": [
+      {
+        "path": "./jsconfig.app.json"
+      }
+    ],
+    "compilerOptions": {
+      "module": "nodenext",
+      "jsx": "preserve",
+      "allowSyntheticDefaultImports": true,
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["./src/*"]
+      }
+    },
+    "include": ["**/*.js", "**/*.jsx"],
+    "exclude": ["node_modules"]
+  }
