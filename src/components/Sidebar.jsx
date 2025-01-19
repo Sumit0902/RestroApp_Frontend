@@ -77,7 +77,7 @@ const Sidebar = () => {
                                 <label className="block mb-1 text-xs text-left uppercase">Employee Management</label>
                                 <SidebarLink href="/dashboard/employees" icon={<Users />} text="Employees" />
                                 <SidebarLink href="/dashboard/timesheet" icon={<Timer />} text="Timesheet" />
-                                <SidebarLink href="/dashboard/schedule" icon={<CalendarClock />} text="Payroll" /> 
+                                {/* <SidebarLink href="/dashboard/schedule" icon={<CalendarClock />} text="Payroll" />  */}
                             </div>
                         </>
                     }

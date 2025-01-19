@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { cn, transformTimesheetData } from '@/lib/utils.js';
 import { Card } from '@/components/ui/card.jsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx';
+import { toast, ToastContainer } from 'react-toastify';
  
 
 
@@ -49,55 +50,57 @@ function TimeSheet() {
   };
 
   const handleCheckIn = async () => {
+	const checkInToast = toast.loading("Processing your request...", {autoClose: 5000})
     const now = new Date();
 	console.log(userData)
-    try {
-        // Make a POST request to the API endpoint
+    try { 
         const response = await authAxios.post(`/companies/${company_id}/timesheets/check-in`, {
             company_id: company_id,
             employee_id: employee_id,
         });
-
-        // Handle successful response
-        if (response.status === 201) {
-            console.log('Check-in successful:', response.data.timesheet);
-            alert('Check-in created successfully!');
+ 
+        if (response.status === 201) {  
+			toast.update(checkInToast, { render: "Check-in created successfully!", type: "success", isLoading: false, autoClose: 5000 });
+			fetchEmployeeTimesheet()
         }
-    } catch (error) {
-        // Handle error response
-        if (error.response) {
-            // Server responded with a status code outside the range of 2xx
-            console.error('Error:', error.response.data.message);
-            alert(`Error: ${error.response.data.message}`);
-        } else {
-            // Network or other unexpected errors
-            console.error('Error:', error.message);
-            alert('An unexpected error occurred. Please try again.');
+    } catch (error) { 
+        if (error.response) { 
+            // console.error('Error:', error.response.data.message);
+			toast.update(checkInToast, { render: `Error: ${error.response.data.message}`, type: "error", isLoading: false, autoClose: 5000  });
+			// toast.error(`Error: ${error.response.data.message}`);  
+        } else { 
+            console.error('Error:', error.message); 
         }
     }
+
+	 
   }
   
 
-  const handleCheckOut = () => {
-    const now = new Date();
-    const updatedEntries = timeEntries.map(entry => {
-      if (entry.checkOut === "-") {
-        const checkInTime = new Date();
-        const [hours, minutes] = entry.checkIn.split(':');
-        checkInTime.setHours(parseInt(hours), parseInt(minutes));
-        const diffHours = ((now - checkInTime) / 3600000).toFixed(2);
-        
-        return {
-          ...entry,
-          checkOut: format(now, 'hh:mm a'),
-          breakTime: "30min",
-          actualHours: `${diffHours}h`
-        };
-      }
-      return entry;
-    });
-    setTimeEntries(updatedEntries);
-  };
+  const handleCheckOut = async () => {
+	const checkOutToast = toast.loading("Processing your request...", {autoClose: 5000})
+	try { 
+        const response = await authAxios.post(`/companies/${company_id}/timesheets/check-out`, {
+            company_id: company_id,
+            employee_id: employee_id,
+        });
+ 
+        if (response.status === 201) {
+            // console.log('Check-in successful:', response.data.timesheet); 
+			toast.update(checkOutToast, { render: "Check-Out created successfully!", type: "success", isLoading: false, autoClose: 5000  });
+			fetchEmployeeTimesheet()
+        }
+    } catch (error) { 
+        if (error.response) { 
+            // console.error('Error:', error.response.data.message);
+			toast.update(checkOutToast, { render: `Error: ${error.response.data.message}`, type: "error", isLoading: false, autoClose: 5000  });
+
+			// toast.error(`Error: ${error.response.data.message}`);  
+        } else { 
+            console.error('Error:', error.message); 
+        }
+    }
+  }
 
   // const handleDelete = (id) => {
   //   setTimeEntries(timeEntries.filter(entry => entry.id !== id));
@@ -145,7 +148,7 @@ function TimeSheet() {
 
   const fetchEmployeeTimesheetForManager = async () => { 
     try {
-      const response = await authAxios.post(`/companies/${company_id}/timesheets/`, {
+      const response = await authAxios.post(`/companies/${company_id}/timesheets`, {
         month: `${currentMonth.getFullYear()}-${currentMonth.getMonth() + 1}`
         // month:  currentMonth
       });
@@ -171,6 +174,7 @@ function TimeSheet() {
   }, [currentMonth]);
 
   useEffect(() => {
+	updateCalendar(currentMonth);
 	if(userData.role == 'manager') {
 		fetchEmployeeTimesheetForManager()
 	}
@@ -281,7 +285,9 @@ function TimeSheet() {
 													})
 												) : (
 													<TableRow>
-														<TableCell className="font-medium bg-muted">No employee data {attendanceData.length }</TableCell>
+														<TableCell colSpan={daysArray.length + 1} className="font-medium bg-muted">No employee data </TableCell>
+														 
+														{/* <TableCell className="font-medium bg-muted">No employee data {attendanceData.length }</TableCell>
 														{daysArray.map((day, key) => (
 															<TableCell
 																key={key}
@@ -290,9 +296,9 @@ function TimeSheet() {
 																	isSameDay(day, today) ? 'bg-black text-white' : ''
 																)}
 															>
-																{day}
+																N/A
 															</TableCell>
-														))}
+														))} */}
 													</TableRow>
 												)}
 											</TableBody>
@@ -315,7 +321,7 @@ function TimeSheet() {
 						</div>
 					</Box>
 				</ScrollArea>
-			</Box>
+			</Box> 
 		</div>
 	)
 }

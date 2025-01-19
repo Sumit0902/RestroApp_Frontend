@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom"
 import Sidebar from "../../components/Sidebar"
 import { Flex } from "@radix-ui/themes"
+import { ToastContainer } from "react-toastify"
 
 const DashboardLayout = () => {
   return (
@@ -9,6 +10,7 @@ const DashboardLayout = () => {
           <Sidebar />
           <Outlet/>
         </Flex>
+        <ToastContainer autoClose={5000}/>
     </div>
   )
 }

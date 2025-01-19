@@ -14,6 +14,7 @@ createRoot(document.getElementById('root')).render(
       <PersistGate loading={null} persistor={persistor}>
         <Theme appearance='light' accentColor='gray' panelBackground="translucent">
           <App />
+          
         </Theme>
       </PersistGate>
     </Provider>

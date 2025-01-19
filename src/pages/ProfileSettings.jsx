@@ -12,6 +12,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { logout } from '@/store/features/auth/AuthSlice.js';
 import axios from 'axios';
+import { HamburgerMenuIcon } from '@radix-ui/react-icons';
+ 
+import { CardHeader, CardTitle, CardContent } from "@/components/ui/card"       
+import { Checkbox } from "@/components/ui/checkbox"
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
 
 const ProfileSettings = () => {
 	const navigate = useNavigate();
@@ -22,15 +27,21 @@ const ProfileSettings = () => {
 	const dispatch = useDispatch();
 	const storedData = useSelector((state) => state.auth.user);
 	let employeeId = null;
-	const [userData, setUserData] = useState({
-		username: '',
-		firstname: '',
-		lastname: '',
-		email: '',
-		company: {},
-		avatar: '',
-		schedule: []
-	});
+	const [firstName, setFirstName] = useState('')
+    const [lastName, setLastName] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [designation, setDesignation] = useState('')
+    const [avatar, setAvatar] = useState(null)
+    const [workDays, setWorkDays] = useState({
+        Monday: false,
+        Tuesday: false,
+        Wednesday: false,
+        Thursday: false,
+        Friday: false,
+        Saturday: false,
+        Sunday: false
+    })
 	const params = useParams();
 	employeeId = params.employeeId;
 
@@ -77,7 +88,13 @@ const ProfileSettings = () => {
 		fetchProfileSettings();
 	}, []);
 
+	  const [showPassword, setShowPassword] = useState(false)
 
+    const handleWorkDayChange = (day) => {
+        setWorkDays(prev => ({ ...prev, [day]: !prev[day] }))
+    }
+
+   
 	const handleInputChange = (e) => {
 		const { name, value, files } = e.target;
 
@@ -173,246 +190,132 @@ const ProfileSettings = () => {
 
 	};
 
+	const handleFileChange = (e) => {
+        setAvatar(e.target.files?.[0] || null)
+    }
 
 
 	return (
-		<div className='w-full p-2 relative h-full  max-h-[calc(100vh_-_2rem)]  '>
-			<Box
-				className='rounded-md '
-				style={{
-					backgroundColor: 'var(--color-background)',
-					borderRadius: 'var(--radius-4)',
-				}}
-			> 
-				<Flex
-					justify='start'
-					align='center'
-					p='4'
-					style={{ borderBottom: '1px solid var(--gray-5)' }}
-				>
-					{userData.originalLogo ? (
-						<img
-							src={`${import.meta.env.VITE_API_UPLOADS_URL}/${userData.originalLogo
-								}`}
-							className='w-[50px] h-[50px] object-fit border border-gray-200 rounded-md mr-2'
-						/>
-					) : (
-						<div className='w-[50px] h-[50px] bg-gray-200 flex items-center justify-center rounded-md mr-2'>
-							<span className='text-gray-500'>Logo</span>
-						</div>
-					)}
-					<Text size='5' weight='bold'>
-						{userData.company_name}{' '}
-					</Text>
-				</Flex>
+        <div className="w-full p-2 relative h-full  ">
+            <Box
+                className="rounded-md "
+                style={{
+                    backgroundColor: 'var(--color-background)',
+                    borderRadius: 'var(--radius-4)',
+                }}
+            >
+                {/* Header */}
+                <Flex justify="between" align="center" p="4" style={{ borderBottom: '1px solid var(--gray-5)' }}>
+                    <Text size="5" weight="bold">Add Employee</Text>
+                    <Button variant="ghost" style={{ display: 'none' }}>
+                        <HamburgerMenuIcon />
+                    </Button>
+                </Flex>
 
-				{/* Scrollable Content Area */}
-				<ScrollArea>
-					<Box p='4' className='max-h-[calc(100vh_-_5rem)]'>
-						<div className='container mx-auto p-4'>
-							<form
-								onSubmit={handleSubmit}
-								className='space-y-4 flex flex-col'
-							>
-								<div className="flex items-center space-x-4">
-									{/* Image Preview */}
-									{userData.logoPreview ? (
-										<img
-											src={userData.logoPreview}
-											className="w-[200px] h-[200px] object-cover border border-gray-200 rounded-md"
-											alt="Company Logo Preview"
-										/>
-									) : userData.originalLogo ? (
-										<img
-											src={`${import.meta.env.VITE_API_UPLOADS_URL}/${userData.originalLogo}`}
-											className="w-[200px] h-[200px] object-cover border border-gray-200 rounded-md"
-											alt="Company Logo"
-										/>
-									) : (
-										<div className="w-[200px] h-[200px] bg-gray-200 flex items-center justify-center">
-											<span className="text-gray-500">Company Logo</span>
-										</div>
-									)}
-
-									<div>
-										<Label className="block text-left" htmlFor="logo">
-											Update Company Logo
-										</Label>
-										<Input id="logo" type="file" name="logo" accept="image/*" onChange={handleInputChange} />
-										{userData.logo && (
-											<button
-												type="button"
-												className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md"
-												onClick={handleRevertLogo}
-											>
-												Revert to Original
-											</button>
-										)}
-									</div>
-								</div>
-								<div className='grid grid-cols-2 gap-4'>
-									<div>
-										<Label
-											className='block text-left'
-											htmlFor='company_name'
-										>
-											Company Name
-										</Label>
-										<Input
-											id='company_name'
-											name='company_name'
-											value={userData.company_name}
-											onChange={handleInputChange}
-										/>
-									</div>
-									<div>
-										<Label
-											className='block text-left'
-											htmlFor='email'
-										>
-											Email
-										</Label>
-										<Input
-											id='email'
-											name='email'
-											type='email'
-											value={userData.email}
-											onChange={handleInputChange}
-										/>
-									</div>
-									<div>
-										<Label
-											className='block text-left'
-											htmlFor='phone'
-										>
-											Phone
-										</Label>
-										<Input
-											id='phone'
-											name='phone'
-											type='tel'
-											value={userData.phone}
-											onChange={handleInputChange}
-										/>
-									</div>
-									<div>
-										<Label
-											className='block text-left'
-											htmlFor='company_zip'
-										>
-											ZIP Code
-										</Label>
-										<Input
-											id='company_zip'
-											name='company_zip'
-											value={userData.company_zip}
-											onChange={handleInputChange}
-										/>
-									</div>
-								</div>
-								<div>
-									<Label
-										className='block text-left'
-										htmlFor='company_about'
-									>
-										About
-									</Label>
-									<Textarea
-										id='company_about'
-										name='company_about'
-										value={userData.company_about}
-										onChange={handleInputChange}
-									/>
-								</div>
-								<div>
-									<Label
-										className='block text-left'
-										htmlFor='company_address1'
-									>
-										Address 1
-									</Label>
-									<Input
-										id='company_address1'
-										name='company_address1'
-										value={userData.company_address1}
-										onChange={handleInputChange}
-									/>
-								</div>
-								<div>
-									<Label
-										className='block text-left'
-										htmlFor='company_address2'
-									>
-										Address 2
-									</Label>
-									<Input
-										id='company_address2'
-										name='company_address2'
-										value={userData.company_address2}
-										onChange={handleInputChange}
-									/>
-								</div>
-								<div className='grid grid-cols-2 gap-4'>
-									<div>
-										<Label
-											className='block text-left'
-											htmlFor='company_city'
-										>
-											City
-										</Label>
-										<Input
-											id='company_city'
-											name='company_city'
-											value={userData.company_city}
-											onChange={handleInputChange}
-										/>
-									</div>
-									<div>
-										<Label
-											className='block text-left'
-											htmlFor='company_state'
-										>
-											State
-										</Label>
-										<Input
-											id='company_state'
-											name='company_state'
-											value={userData.company_state}
-											onChange={handleInputChange}
-										/>
-									</div>
-								</div>
-								<div className='grid grid-cols-2 gap-4'>
-									<div>
-										<Label
-											className='block text-left'
-											htmlFor='company_days'
-										>
-											Operational Days
-										</Label>
-										<div>
-											{weekdays.map((day, index) => (
-												<label key={index} className="flex items-center space-x-2">
-													<input
-														type="checkbox"
-														value={index}
-														checked={userData.workingDays?.includes(index)}
-														onChange={() => handleCheckboxChange(index)}
-													/>
-													<span>{day}</span>
-												</label>
-											))}
-										</div>
-									</div> 
-								</div>
-								<Button type='submit'>Save Changes</Button>
-							</form>
-						</div>
-					</Box>
-				</ScrollArea>
-			</Box>
-		</div>
-	);
+                {/* Scrollable Content Area */}
+                <ScrollArea >
+                    <Box p="4" style={{ paddingBottom: '20px' }} className="h-screen text-left "  >
+                        <CardHeader>
+                            <CardTitle className="text-2xl font-bold">Add New Employee</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="avatar">Avatar</Label>
+                                    <Input
+                                        id="avatar"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="firstName">First Name</Label>
+                                        <Input
+                                            id="firstName"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="lastName">Last Name</Label>
+                                        <Input
+                                            id="lastName"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">Password</Label>
+                                    <div className="relative">
+                                        <Input
+                                            id="password"
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOffIcon className="h-4 w-4" />
+                                            ) : (
+                                                <EyeIcon className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="designation">Designation</Label>
+                                    <Input
+                                        id="designation"
+                                        value={designation}
+                                        onChange={(e) => setDesignation(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Days of Work</Label>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {Object.keys(workDays).map((day) => (
+                                            <div key={day} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={day}
+                                                    checked={workDays[day]}
+                                                    onCheckedChange={() => handleWorkDayChange(day)}
+                                                />
+                                                <Label htmlFor={day}>{day}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <Button type="submit" className="w-full">Add Employee</Button>
+                            </form>
+                        </CardContent>
+                    </Box>
+                </ScrollArea>
+            </Box>
+        </div>
+    )
 };
 
 export default ProfileSettings;
