@@ -19,6 +19,7 @@ export default function Schedule() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(false);  
+    const [loading, setLoading] = useState(true);  
     const [schedules, setSchedules] = useState({}); 
     const [employees, setEmployees] = useState([]);
     const [shifts, setShifts] = useState([]);
@@ -44,6 +45,7 @@ export default function Schedule() {
             setEmployees(filteredEmployees);
             setShifts(filteredShifts);
             setIsManager(userData.role === 'manager');
+            setLoading(false)
         }
     };
 
@@ -65,9 +67,7 @@ export default function Schedule() {
     const weekDays = getWeekDays(weekNumber)
     const fetchSchedules = async () => {
         let company_id = userData.company.id;
-        
-        // const selectedDate = addWeeks(new Date(), weekOffset);
-        // const weekNumber = getISOWeek(selectedDate);
+         
         const year = getYear(selectedDate);
          
 
@@ -165,7 +165,11 @@ export default function Schedule() {
         <div className="p-4">
             <div className="mb-4 flex justify-between">
                 <div className="flex">
-                    {isManager && (
+                    { loading ?
+                        <p>Loading</p>
+
+                    :
+                    (isManager && (
                         <Button
                             onClick={() => { 
                                 setIsOpen(true);
@@ -173,7 +177,8 @@ export default function Schedule() {
                         >
                             Add Schedule
                         </Button>
-                    )}
+                    ))
+                    }
                 </div>
                 {isManager && (
                 <div className="flex justify-end gap-4">
@@ -187,44 +192,62 @@ export default function Schedule() {
                 <table className="min-w-full divide-y divide-gray-200">
                     <TableHeader />
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {Object.entries(schedules).map(([userId, scheduleData]) => {
-                            return (
-                            <tr key={userId}>
-                                <td className="px-2 py-4 whitespace-nowrap border-b border-gray-200">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium text-gray-900">
-                                            {scheduleData.user}
-                                        </span>
-                                        {
-                                            userData.role != 'employee' &&
-                                            <button
-                                                type="button"
-                                                className="p-1 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-full transition-colors"
-                                                onClick={() => handleEditClick(
-                                                    scheduleData.scheduleId, // Replace with actual schedule ID
-                                                    userId,
-                                                    userData.company.id, // Replace with actual company ID
-                                                    getISOWeek(new Date()) // Replace with actual week number
-                                                )}
-                                                data-schedule-id={scheduleData.scheduleId}
-                                                data-user-id={userId}
-                                                data-company-id={ userData.company.id}
-                                                data-week-number={getISOWeek(new Date())}
-                                            >
-                                                <Pencil className="w-4 h-4" />
-                                            </button>
-
-                                        }
-                                    </div>
-                                </td>
-                                {weekDays.map((_, index) => (
-                                    <td key={index} className="px-2 py-4 whitespace-nowrap border-b border-gray-200 w-[9rem] ">
-                                        <ShiftCell shift={getShiftForDay(scheduleData, index)} />
-                                    </td>
-                                ))}
+                        {
+                            loading ? 
+                            <tr>
+                                <td className="px-2 py-4 whitespace-nowrap border-b border-gray-200" colSpan={8}>
+                                    Loading...
+                                </td> 
                             </tr>
-                        )}
-                        )}
+                            :
+                            (
+                                Object.entries(schedules).length > 0 ?
+                                Object.entries( schedules).map(([userId, scheduleData]) => {
+                                    return (
+                                    <tr key={userId}>
+                                        <td className="px-2 py-4 whitespace-nowrap border-b border-gray-200">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {scheduleData.user}
+                                                </span>
+                                                {
+                                                    userData.role != 'employee' &&
+                                                    <button
+                                                        type="button"
+                                                        className="p-1 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-full transition-colors"
+                                                        onClick={() => handleEditClick(
+                                                            scheduleData.scheduleId, // Replace with actual schedule ID
+                                                            userId,
+                                                            userData.company.id, // Replace with actual company ID
+                                                            getISOWeek(new Date()) // Replace with actual week number
+                                                        )}
+                                                        data-schedule-id={scheduleData.scheduleId}
+                                                        data-user-id={userId}
+                                                        data-company-id={ userData.company.id}
+                                                        data-week-number={getISOWeek(new Date())}
+                                                    >
+                                                        <Pencil className="w-4 h-4" />
+                                                    </button>
+    
+                                                }
+                                            </div>
+                                        </td>
+                                        {weekDays.map((_, index) => (
+                                            <td key={index} className="px-2 py-4 whitespace-nowrap border-b border-gray-200 w-[9rem] ">
+                                                <ShiftCell shift={getShiftForDay(scheduleData, index)} />
+                                            </td>
+                                        ))}
+                                    </tr>
+                                    )
+                                })
+                                : 
+                                <tr>
+                                    <td className="px-2 py-4 whitespace-nowrap border-b border-gray-200" colSpan={8}>
+                                        No schedule for this week
+                                    </td> 
+                                </tr>
+                            )
+                        }
                     </tbody>
                 </table>
             </div>

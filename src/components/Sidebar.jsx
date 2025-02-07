@@ -6,6 +6,7 @@ import { CalendarClock, ClipboardList, Clock, Clock10, Clock2, CogIcon, GaugeCir
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
+import NotificationMenu from "./NotificationMenu.jsx"
 
 const Sidebar = () => {
 
@@ -95,6 +96,7 @@ const Sidebar = () => {
                     }
                 </Flex>
                 <Flex className="footer-menu" direction="column" gap="3" justify="between">
+                    <NotificationMenu employeeId={user.id}  companyId={user.company.id} />
                     <UserMenu userName={`${user?.firstname} ${user?.lastname}`} userEmail={user?.email} userAvatar={user?.avatar} />
                 </Flex>
             </Flex>

@@ -26,6 +26,7 @@ export default function Shifts() {
  
   const [shifts, setShifts] = useState([]);
   const [isOpen, setIsOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [currentShift, setCurrentShift] = useState(null)
   const userData = useSelector(state => state.auth.user)
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ export default function Shifts() {
       }
       console.error('Error fetching companies:', error, error.response.status);
     }
+    setLoading(false)
   };
 
 
@@ -112,6 +114,7 @@ export default function Shifts() {
   
         // Update state with edited shift
         setShifts(shifts.map((shift) => (shift.id === currentShift.id ? updatedShift : shift)));
+        
       } else {
         // Add new shift
         const response = await axiosInstance.post(
@@ -123,7 +126,7 @@ export default function Shifts() {
         // Add new shift to state
         setShifts([...shifts, newShift]);
       }
-  
+      
       handleCloseModal();
     } catch (error) {
       console.error("Error saving shift:", error.response?.data?.error || error.message);
@@ -167,7 +170,13 @@ export default function Shifts() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {shifts.length > 0 ?
+                  {loading ?
+                  <TableRow >
+                      <TableCell colSpan={5} className="font-medium col-span-4" >Loading!</TableCell>
+                  </TableRow>
+                  :
+
+                  (shifts.length > 0 ?
                     shifts.map((shift) => (
                     <TableRow key={shift.id}>
                       <TableCell className="font-medium text-left">{shift.name}</TableCell>
@@ -184,7 +193,7 @@ export default function Shifts() {
                   :
                   <TableRow  >
                       <TableCell colSpan={5} className="font-medium col-span-4" >No data to show yet!</TableCell>
-                    </TableRow>
+                  </TableRow>)
                 }
                 </TableBody>
               </Table>
@@ -240,16 +249,7 @@ export default function Shifts() {
                             defaultValue={currentShift?.end_time || ''}
                             required
                           />
-                        </div>
-                        {/* <div>
-                          <Label htmlFor="description">Description</Label>
-                          <Textarea
-                            id="description"
-                            name="description"
-                            defaultValue={currentShift?.description || ''}
-                            rows={3}
-                          />
-                        </div> */}
+                        </div> 
                         <div className="flex justify-end space-x-2">
                           <Button type="button" variant="outline" onClick={handleCloseModal}>
                             Cancel
@@ -270,7 +270,6 @@ export default function Shifts() {
                   </div>
                   </Dialog>
               </Transition>
-
             </div>
           </Box>
         </ScrollArea>
