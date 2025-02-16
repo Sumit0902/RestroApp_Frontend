@@ -17,6 +17,8 @@ import TaskList from './pages/TaskList.jsx'
 import Shifts from './pages/Shifts.jsx'
 import CompanyProfile from './pages/CompanyProfile.jsx'
 import ProfileSettings from './pages/ProfileSettings.jsx'
+import LeaveManagement from './pages/LeaveManagement.jsx'
+import Notifications from './pages/Notifications.jsx'
 
 function App() {
    
@@ -38,6 +40,8 @@ function App() {
               <Route path="schedules" element={<Schedules />}/>
               <Route path="task-list" element={<TaskList />}/>
               <Route path="add-employee" element={<AddEmployee />}/>
+              <Route path="notifications" element={<Notifications />}/>
+              <Route path="leave-management" element={<LeaveManagement />}/>
               <Route path="profile-settings" element={<ProfileSettings />}/>
             </Route>
         </Routes>

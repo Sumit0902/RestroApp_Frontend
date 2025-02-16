@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 // import { Textarea } from "@/components/ui/textarea.jsx"
@@ -70,11 +70,11 @@ const UpdateEmployeeForm = ({ showFormHandler, companyId, refreshList, employeeI
             if (error.response?.status == 403) {
                 // token must be expired 
                 toast.error('Your session has expired. please login again');
-                dispatch(logout);
+                await dispatch(logout);
 
                 setTimeout(() => {
                     navigate('/');
-                }, 3000);
+                }, 1000);
             }
             console.error('Error fetching companies:', error, error.response?.status);
         }

@@ -2,11 +2,12 @@ import { Flex, ScrollArea } from "@radix-ui/themes"
 import SidebarLink from "@/components/SidebarLink.jsx"
 import { BackpackIcon, GearIcon, HomeIcon, PersonIcon } from "@radix-ui/react-icons"
 import UserMenu from "./UserMenu.jsx"
-import { CalendarClock, ClipboardList, Clock, Clock10, Clock2, CogIcon, GaugeCircleIcon, Repeat, SquareCheckIcon, Timer, User2Icon, Users } from "lucide-react"
+import { CalendarClock, CalendarX2, ClipboardList, Clock, Clock10, Clock2, CogIcon, GaugeCircleIcon, Repeat, SquareCheckIcon, Timer, User2Icon, Users } from "lucide-react"
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import NotificationMenu from "./NotificationMenu.jsx"
+import LeaveManagement from "@/pages/LeaveManagement.jsx"
 
 const Sidebar = () => {
 
@@ -78,6 +79,8 @@ const Sidebar = () => {
                                 <label className="block mb-1 text-xs text-left uppercase">Employee Management</label>
                                 <SidebarLink href="/dashboard/employees" icon={<Users />} text="Employees" />
                                 <SidebarLink href="/dashboard/timesheet" icon={<Timer />} text="Timesheet" />
+                                <SidebarLink href="/dashboard/leave-management" icon={<CalendarX2 />} text="Leave Management" />
+
                                 {/* <SidebarLink href="/dashboard/schedule" icon={<CalendarClock />} text="Payroll" />  */}
                             </div>
                         </>
@@ -91,12 +94,13 @@ const Sidebar = () => {
                             <SidebarLink href="/dashboard/timesheet" icon={<Timer />} text="Timesheet" />
                             <SidebarLink href="/dashboard/schedules" icon={<CalendarClock />} text="Schedule" />
                             <SidebarLink href="/dashboard/task-list" icon={<SquareCheckIcon />} text="Tasks" />
+                            <SidebarLink href="/dashboard/leave-management" icon={<CalendarX2 />} text="Leave Management" />
                             <SidebarLink href="/dashboard/profile-settings" icon={<User2Icon />} text="Profile Settings" />
                         </div>
                     }
                 </Flex>
                 <Flex className="footer-menu" direction="column" gap="3" justify="between">
-                    <NotificationMenu employeeId={user.id}  companyId={user.company.id} />
+                    <NotificationMenu employeeId={user?.id}  companyId={user?.company.id} />
                     <UserMenu userName={`${user?.firstname} ${user?.lastname}`} userEmail={user?.email} userAvatar={user?.avatar} />
                 </Flex>
             </Flex>

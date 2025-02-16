@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <Theme appearance='light' accentColor='gray' panelBackground="translucent">
+        <Theme appearance='light' accentColor='indigo' panelBackground="translucent"  grayColor="mauve" radius="large">
           <App />
         </Theme>
       </PersistGate>
