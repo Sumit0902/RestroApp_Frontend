@@ -130,7 +130,7 @@ const CompanyProfile = () => {
 	};
 
 	const handleSubmit = async (e) => {
-		const updateToast = toast.loading("Processing your request...", { autoClose: 7000 })
+		const updateToast = toast.loading("Processing your request...", { autoClose: 5000 })
 		e.preventDefault();
 
 		const cData = {
@@ -160,7 +160,7 @@ const CompanyProfile = () => {
 				}
 			});
 			console.log('company resp', updateCompanyRes.data.data, updateCompanyRes.data);
-			toast.update(updateToast, { render: "Company Updated successfully", type: "success", isLoading: false });
+			toast.update(updateToast, { render: "Company Updated successfully", type: "success", isLoading: false, autoClose: 5000 });
 
 		} catch (error) {
 			if (error.response?.status == 403) {
@@ -172,7 +172,7 @@ const CompanyProfile = () => {
 				}, 3000);
 			}
 			console.error('Error fetching companies:', error, error.response?.status);
-			toast.update(updateToast, { render: "THere is an error in your submission", type: "error", isLoading: false, autoClose: 7000 });
+			toast.update(updateToast, { render: "THere is an error in your submission", type: "error", isLoading: false, autoClose: 5000 });
 
 		}
 		console.log('Form submitted:', companyData);

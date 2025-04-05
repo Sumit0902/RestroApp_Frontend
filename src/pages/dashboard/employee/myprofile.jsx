@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, Input, Typography, Card, Select, Option, Switch, Dialog } from '@material-tailwind/react';
+import { Button, Input, Typography, Card, Select, Option, Switch, Dialog, Spinner } from '@material-tailwind/react';
 import { toast } from 'react-toastify';
 import useAuthAxios from '@/lib/authAxios';
 import { updateUserProfile } from '@/store/features/auth/AuthSlice';
@@ -52,15 +52,14 @@ const MyProfile = () => {
 			setAvatarPreview(URL.createObjectURL(file));
 		}
 	};
-	console.log('2fa en',twoFactorEnabled)
+	 
 	const handleUpdateProfile = async (e) => {
 		e.preventDefault();
 		setIsSubmitting(true);
 		console.log('update started')
 		const formDataToSend = new FormData();
 		Object.keys(formData).forEach((key) => {
-			if (key === 'password' && formData[key]) {
-				// Validate password length
+			if (key === 'password' && formData[key]) { 
 				if (formData[key].length < 8) {
 					toast.error('Password must be at least 8 characters long.');
 					setIsSubmitting(false);
@@ -87,8 +86,7 @@ const MyProfile = () => {
 			toast.success('Profile updated successfully!');
 			dispatch(updateUserProfile(response.data.data)); // Update user in Redux state
 		} catch (error) {
-		console.log('update came here 3')
-
+			console.log('update came here 3', error)
 			toast.error('Failed to update profile.');
 		} finally {
 		console.log('update came here 4')
@@ -100,12 +98,15 @@ const MyProfile = () => {
 	};
 
 	const handleEnable2FA = async () => {
+		setIsSubmitting(true);
 		try {
 			const response = await authAxios.post(`/companies/${userData.company.id}/employees/${userData.id}/enable-2fa`);
 			setQrCode(response.data.qr_code); // Assuming the API returns a QR code URL
 			setIsModalOpen(true);
 		} catch (error) {
 			toast.error('Failed to enable 2FA.');
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -139,13 +140,13 @@ const MyProfile = () => {
 			});
 
 			toast.success('Two-factor authentication disabled successfully!');
-			setTwoFactorEnabled(false); // Update the state to reflect 2FA is disabled
-			dispatch(updateUserProfile({ ...userData, two_factor: false })); // Update 2FA status in Redux
+			setTwoFactorEnabled(false);
+			dispatch(updateUserProfile({ ...userData, two_factor: false })); 
 			setIsDisableModalOpen(false); // Close the modal
 			setDisablePassword(''); // Clear the password input
 		} catch (error) {
 			console.error('Error disabling 2FA:', error);
-			setDisableError(error.response?.data?.error || 'Failed to disable 2FA.'); // Show error in modal
+			setDisableError(error.response?.data?.error || 'Failed to process you request. Please try again later.'); 
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -277,16 +278,19 @@ const MyProfile = () => {
 				{/* Two-Factor Authentication */}
 				<div className="flex items-center justify-between mt-6">
 					<Typography variant="h6">Two-Factor Authentication</Typography>
-					<Switch
-						checked={twoFactorEnabled}
-						onChange={(checked) => {
-							if (!twoFactorEnabled) {
-								handleEnable2FA(); // Enable 2FA
-							} else {
-								setIsDisableModalOpen(true); // Open the disable 2FA modal
-							}
-						}}
-					/>
+					<div className='flex items-center'>
+						{isSubmitting  && <Spinner className='mr-2' /> }
+						<Switch
+							checked={twoFactorEnabled}
+							onChange={(checked) => {
+								if (!twoFactorEnabled) {
+									handleEnable2FA(); // Enable 2FA
+								} else {
+									setIsDisableModalOpen(true); // Open the disable 2FA modal
+								}
+							}}
+						/>
+					</div>
 				</div>
 				{twoFactorEnabled && (
 					<Typography variant="small" color="gray">

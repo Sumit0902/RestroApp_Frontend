@@ -146,14 +146,14 @@ function TimeSheet() {
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  const calculateHours = (checkIn, checkOut) => {
-    if (!checkIn || !checkOut) return 0;
-    const [inH, inM] = checkIn.split(':').map(Number);
-    const [outH, outM] = checkOut.split(':').map(Number);
-    const inTime = inH + inM / 60;
-    const outTime = outH + outM / 60;
-    return (outTime - inTime).toFixed(1);
-  };
+  // const calculateHours = (checkIn, checkOut) => {
+  //   if (!checkIn || !checkOut) return 0;
+  //   const [inH, inM] = checkIn.split(':').map(Number);
+  //   const [outH, outM] = checkOut.split(':').map(Number);
+  //   const inTime = inH + inM / 60;
+  //   const outTime = outH + outM / 60;
+  //   return (outTime - inTime).toFixed(1);
+  // };
 
   const daysArray = generateDaysArray(currentMonth.getFullYear(), currentMonth.getMonth());
 
@@ -174,6 +174,28 @@ function TimeSheet() {
       setSelectedWeek(weeks.length - 1);
     }
   };
+
+  const calculateHours = (checkIn, checkOut) => { 
+    if (!checkIn) return 0; // Return 0 if check-in is missing
+
+    let checkInTime = new Date(`1970-01-01T${checkIn}:00`);
+    let checkOutTime;
+
+    if (!checkOut) {
+        // If check-out is null, assume 8 hours
+        return 8;
+    } else {
+        checkOutTime = new Date(`1970-01-01T${checkOut}:00`);
+    }
+
+    // Handle cases where check-out is on the next day
+    if (checkOutTime < checkInTime) {
+        checkOutTime.setDate(checkOutTime.getDate() + 1);
+    }
+
+    let diffHours = (checkOutTime - checkInTime) / (1000 * 60 * 60);
+    return diffHours;
+}
 
   return (
     <div className='w-full p-2 relative h-full max-h-[calc(100vh_-_2rem)]'>
@@ -221,27 +243,25 @@ function TimeSheet() {
                         </thead>
                         <tbody>
                           {attendanceData.map((entry) => {
-                            let totalHours = 0; // Initialize total hours for the employee
+                            let totalHours = 0; 
                             return (
-                              <tr key={entry.user.id}>
-                                {/* Employee Name */}
+                              <tr key={entry.user.id}> 
                                 <td style={{ border: '1px solid #ddd', padding: '8px' }}>
                                   {entry.user.firstname} {entry.user.lastname}
-                                </td>
-                                {/* Days of the Week */}
+                                </td> 
                                 {weeks[selectedWeek].map((day) => {
-                                  const date = format(day, 'yyyy-MM-dd'); // Format the day to match the attendance date
-                                  const record = entry.attendance[date] || { check_in: null, check_out: null }; // Get attendance record for the day
-                                  const hours = calculateHours(record.check_in, record.check_out); // Calculate hours worked
-                                  totalHours += parseFloat(hours); // Add to total hours
-
+                                  const date = format(day, 'yyyy-MM-dd');  
+                                  const record = entry.attendance[date] || { check_in: null, check_out: null }; 
+                                  const hours = calculateHours(record.check_in, record.check_out);  
+                                  totalHours += parseFloat(hours);  
+                                  console.log('ott', hours, record)
                                   return (
                                     <td
                                       key={day}
                                       style={{
                                         border: '1px solid #ddd',
                                         padding: '8px',
-                                        backgroundColor: hours > 0 ? '#d4edda' : '#f8d7da', // Green for worked hours, red for no attendance
+                                        backgroundColor: hours > 0 ? '#d4edda' : '', 
                                       }}
                                     >
                                       {record.check_in && record.check_out ? (
@@ -250,14 +270,14 @@ function TimeSheet() {
                                           <div>{format(new Date(`${date}T${record.check_out}`), 'hh:mm a')}</div>
                                         </>
                                       ) : (
-                                        '-' // Display "-" if no attendance
+                                        '-'  
                                       )}
                                     </td>
                                   );
                                 })}
                                 {/* Total Hours */}
                                 <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                                  {totalHours.toFixed(1)}h
+                                  {totalHours}h
                                 </td>
                               </tr>
                             );

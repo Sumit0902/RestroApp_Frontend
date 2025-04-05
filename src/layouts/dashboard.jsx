@@ -1,6 +1,4 @@
-import { Routes, Route } from "react-router-dom";
-import { Cog6ToothIcon } from "@heroicons/react/24/solid";
-import { IconButton } from "@material-tailwind/react";
+import { Routes, Route } from "react-router-dom"; 
 import {
   Sidenav,
   DashboardNavbar,
@@ -13,6 +11,7 @@ import { Profile } from "@/pages/dashboard";
 import SingleEmployee from "@/pages/dashboard/singleEmployee";
 import { useSelector } from "react-redux";
 import NotFound from "@/pages/404";
+import MyProfile from "@/pages/dashboard/employee/myprofile";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -53,11 +52,11 @@ export function Dashboard() {
           {/* extra routes not present in manager or employee route list */}
           {userData?.role === 'manager' && 
               <>
-              <Route exact path='/profile' element={<Profile/>} />
+              <Route exact path='/profile' element={<MyProfile/>} />
               <Route exact path='/employee/:id' element={<SingleEmployee/>} />
               </>
           } 
-           <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <div className="text-blue-gray-600">
           <Footer />

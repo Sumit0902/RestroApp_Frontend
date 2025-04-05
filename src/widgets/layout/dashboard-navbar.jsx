@@ -44,8 +44,7 @@ export function DashboardNavbar() {
 
     }
 
-    const handleLink = (handle) => {
-        console.log('sfdsf', handle)
+    const handleLink = (handle) => { 
         switch (handle) {
             case 'profile':
                 navigate('/dashboard/profile')
