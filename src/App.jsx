@@ -1,54 +1,36 @@
-import './App.css'
-import { BrowserRouter, Routes, Route } from 'react-router-dom' 
-import Dashboard from '@/pages/Dashboard.jsx'
-import Auth from './pages/Auth'
-import DashboardLayout from '@/pages/Layout/DashboardLayout.jsx'
-import Companies from '@/pages/Companies.jsx'
-import AddCompany from '@/pages/AddCompany.jsx'
-import AddEmployee from '@/pages/AddEmployee.jsx'
-import Employees from '@/pages/Employees.jsx'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/ReactToastify.css';
-import CompanyDetails from '@/pages/CompanyDetails.jsx'
-import EditCompany from '@/pages/EditCompany.jsx'
-import TimeSheet from './pages/TimeSheet.jsx'
-import Schedules from './pages/Schedules.jsx'
-import TaskList from './pages/TaskList.jsx'
-import Shifts from './pages/Shifts.jsx'
-import CompanyProfile from './pages/CompanyProfile.jsx'
-import ProfileSettings from './pages/ProfileSettings.jsx'
-import LeaveManagement from './pages/LeaveManagement.jsx'
-import Notifications from './pages/Notifications.jsx'
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Dashboard, Auth } from "@/layouts";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useSelector } from "react-redux";
+import NotFound from "./pages/404";
 
 function App() {
-   
+
+  const isAuthenticated = useSelector((state) => state.auth.user);
+  console.log(isAuthenticated)
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<Auth />}/>
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<Dashboard />}/>
-              <Route path="companies" element={<Companies />}/>
-              <Route path="companies/add" element={<AddCompany />}/>
-              <Route path="companies/:companyId" element={<CompanyDetails />} />
-              <Route path="companies/:companyId/edit" element={<EditCompany />} /> 
-              <Route path="company-profile" element={<CompanyProfile />}/>
-              <Route path="employees" element={<Employees />}/>
-              <Route path="timesheet" element={<TimeSheet />}/>
-              <Route path="shifts" element={<Shifts />}/>
-              <Route path="schedules" element={<Schedules />}/>
-              <Route path="task-list" element={<TaskList />}/>
-              <Route path="add-employee" element={<AddEmployee />}/>
-              <Route path="notifications" element={<Notifications />}/>
-              <Route path="leave-management" element={<LeaveManagement />}/>
-              <Route path="profile-settings" element={<ProfileSettings />}/>
-            </Route>
-        </Routes>
-      </BrowserRouter>
-      <ToastContainer autoClose={5000}/>
-    </>
-  )
+    <Routes>
+      {/* Root route: Redirect based on authentication */}
+      <Route
+        path="/"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/auth/sign-in" replace />
+          ) : (
+            <Navigate to="/dashboard" replace />
+          )
+        }
+      />
+      {/* Protected dashboard route */}
+      <Route path="/dashboard/*" element={<ProtectedRoute />}>
+        <Route path="*" element={<Dashboard />} />
+      </Route>
+      {/* Authentication route */}
+      <Route path="/auth/*" element={<Auth />} />
+      {/* Catch-all route: Show 404 for any undefined URL */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;

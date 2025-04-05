@@ -3,8 +3,7 @@ import { format, addDays, startOfWeek, getISOWeek, getYear, addWeeks, setISOWeek
 import ScheduleDialog from './ScheduleDialog.jsx';
 import EditScheduleDialog from './EditScheduleDialog.jsx';
 import { useDispatch, useSelector } from 'react-redux';
-import useAuthAxios from '@/lib/authAxios.js';
-import { Button } from './ui/button.jsx';
+import useAuthAxios from "@/lib/authAxios";;
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '@/store/features/auth/AuthSlice.js';
@@ -80,7 +79,8 @@ export default function Schedule() {
             });
             setSchedules(response.data.data);
         } catch (error) {
-            if (error.response?.status == 403) {
+            let errorStatus = error.response?.status;
+            if (errorStatus && (errorStatus == 403 || errorStatus == 401) ) {
                 toast.error('Your session has expired. please login again');
                 dispatch(logout);
                 setTimeout(() => {

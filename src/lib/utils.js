@@ -1,5 +1,7 @@
+import { logout } from "@/store/features/auth/AuthSlice";
 import { clsx } from "clsx";
 import { format, parse } from "date-fns";
+import { toast } from "react-toastify";
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs) {
@@ -38,3 +40,16 @@ export function transformTimesheetData(timesheets) {
 
   return attendanceData;
 }
+
+export const handleAuthError = (error, dispatch, navigate) => {
+  const errorStatus = error.response?.status;
+  if (errorStatus === 403 || errorStatus === 401) {
+    toast.error('Your session has expired. Please log in again.');
+    dispatch(logout());
+    setTimeout(() => {
+      navigate('/');
+    }, 3000);
+  } else {
+    console.error('API Error:', error);
+  }
+};

@@ -11,7 +11,7 @@ import {
 } from 'redux-persist';
 import localForage from 'localforage';
 import authReducer from '@/store/features/auth/AuthSlice.js'
-import purgeMiddleware from './persistMiddleware.js';
+import purgeMiddleware from './persistMiddleware';
 // Configure persist
 const persistConfig = {
 	key: 'root',

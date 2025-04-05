@@ -1,5 +1,3 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
 import { format, isSameMonth, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 
