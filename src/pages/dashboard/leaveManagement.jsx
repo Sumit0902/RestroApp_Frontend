@@ -29,6 +29,7 @@ const LeaveManagement = () => {
 	const [endDate, setEndDate] = useState('')
 	const [startError, setStartError] = useState('');
 	const [endError, setEndError] = useState('');
+	const [selectedLeave, setSelectedLeave] = useState('');
 
 	const [isOpenAccept, setIsOpenAccept] = useState(false)
 	const [isOpenReject, setIsOpenReject] = useState(false)
@@ -125,14 +126,16 @@ const LeaveManagement = () => {
 		console.log('end date ran', date, startbodyate, endDate, value)
 	};
 
-	const handleModalAc = () => {
+	const handleModalAc = (leave) => {
 		setIsOpenAccept(!isOpenAccept);
+		setSelectedLeave(leave);
 	};
 
 	 
 
-	const handleModalRj = () => {
+	const handleModalRj = (leave) => {
 		setIsOpenReject(!isOpenReject);
+		setSelectedLeave(leave);
 	};
  
 	const handleModalRq = () => {
@@ -166,6 +169,9 @@ const LeaveManagement = () => {
 			});
 			console.log('approveReq', approveReq)
 			setformSubmitingAc(false)
+			setIsOpenAccept(!isOpenAccept);
+			setSelectedLeave("");
+			setRemarks("");
 			toast.success('Leave approved successfully')
 			fetchLeaves()
 		} catch (error) {
@@ -176,7 +182,7 @@ const LeaveManagement = () => {
 	}
 
 	const rejectLeave = async (leaveId) => {
-		setformSubmitingAc(true)
+		setformSubmitingRj(true)
 
 		if(null == remarks || remarks == ''){ 
 			toast.error('Remarks is required')
@@ -189,14 +195,12 @@ const LeaveManagement = () => {
 
 		}
 		try {
-			let rejectReq = await axiosInstance.put(`/companies/${companyId}/leave-management/${leaveId}/reject`, { remarks }, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				}
-			});
+			let rejectReq = await axiosInstance.put(`/companies/${companyId}/leave-management/${leaveId}/reject`, { remarks });
 			console.log('rejectReq', rejectReq)
 			setformSubmitingAc(false)
+			setIsOpenReject(!isOpenReject);
+			setSelectedLeave("");
+			setRemarks("");
 			toast.success('Leave rejected successfully')
 			fetchLeaves()
 		} catch (error) {
@@ -209,12 +213,7 @@ const LeaveManagement = () => {
 	const cancelRequest = async (leaveId) => {
 		setformSubmitingRqc(true)
 		try {
-			let cancelReq = await axiosInstance.put(`/companies/${companyId}/leave-management/${leaveId}/cancel`, {}, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				}
-			});
+			let cancelReq = await axiosInstance.put(`/companies/${companyId}/leave-management/${leaveId}/cancel`);
 			console.log('cancelReq', cancelReq)
 			setformSubmitingRqc(false)
 			document.querySelector('button#closeBtn').click()
@@ -231,12 +230,7 @@ const LeaveManagement = () => {
 	const requestLeave = async () => {
 		setformSubmitingRq(true)
 		try {
-			let leaveReq = await axiosInstance.post(`/companies/${companyId}/leave-management/myleaves/${userData.id}/request`, { start_date: startbodyate, end_date: endDate, reason, leaveType }, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				}
-			});
+			let leaveReq = await axiosInstance.post(`/companies/${companyId}/leave-management/myleaves/${userData.id}/request`, { start_date: startbodyate, end_date: endDate, reason, leaveType });
 			console.log('leaveReq', leaveReq)
 			setformSubmitingRq(false)
 			toast.success('Leave requested successfully')
@@ -306,9 +300,9 @@ const LeaveManagement = () => {
 									</div>
 								</form>
 								<div className='flex gap-4 mt-4 justify-end'>
-									<Button color="indigo" variant="soft" id="approveLeave" onClick={() => requestLeave()} className='flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed' disabled={!!formLoader}> {formLoader && <Spinner/> }   Request</Button>
+									<Button color="gray" variant="gradient" id="approveLeave" onClick={() => requestLeave()} className='flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed' disabled={!!formLoader}> {formLoader && <Spinner/> }   Request</Button>
 
-									<Button variant="solid" color="indigo" id="closeBtn" onClick={() => handleModalRq()} >
+									<Button variant="outlined" color="red" id="closeBtn" onClick={() => handleModalRq()} >
 										Cancel
 									</Button>
 								</div>
@@ -411,140 +405,79 @@ const LeaveManagement = () => {
 										const classes = isLast
 										? "p-4"
 										: "p-4 border-b border-blue-gray-50";
-										return (
-											
-											<>
+										return ( 
+												<tr key={index}>
 												{userData.role == 'manager' ?
-													<tr key={index}>
-														<td className={`max-w-[150px] break-words ${classes}`}>
-															<div className="flex flex-col">
-																<div className='font-bold'>
-																	{leave.user?.firstname} {leave.user?.lastname}
+														<>
+															<td className={`max-w-[150px] break-words ${classes}`}>
+																<div className="flex flex-col">
+																	<div className='font-bold'>
+																		{leave.user?.firstname} {leave.user?.lastname}
+																	</div>
+																	<div className='italic'>
+																		{leave.user?.email}
+																	</div>
 																</div>
-																<div className='italic'>
-																	{leave.user?.email}
+															</td>
+															<td className={`max-w-[150px] break-words ${classes}`}>
+																<div className="flex flex-col">
+																	<div className=""><span className='font-bold'>From:</span> {format(startbodyateRaw, 'MMM dd, yyyy')}</div>
+																	<div className=""><span className='font-bold'>To:</span> {format(endDateRaw, 'MMM dd, yyyy')}</div>
 																</div>
-															</div>
-														</td>
-														<td className={`max-w-[150px] break-words ${classes}`}>
-															<div className="flex flex-col">
-																<div className=""><span className='font-bold'>From:</span> {format(startbodyateRaw, 'MMM dd, yyyy')}</div>
-																<div className=""><span className='font-bold'>To:</span> {format(endDateRaw, 'MMM dd, yyyy')}</div>
-															</div>
-														</td>
-														<td className='capitalize'>{leave.type}</td>
-														<td className={`max-w-[200px] ${classes}`}>{leave.reason}</td>
-														<td className={`${classes}`}><span className={`text-white rounded-md px-4 py-1 capitalize ${leave.status == 'approved' ? 'bg-green-400' : (leave.status == 'rejected' ? 'bg-red-400' : 'bg-deep-orange-500')} `}>{leave.status}</span></td>
-														<td className={`max-w-[200px] ${classes}`}>{leave.remarks ?? '-'}</td>
-														<td className={`max-w-[200px] ${classes}`}>
-															{leave.status == 'pending' &&
-																<div className='flex flex-col gap-2'>
+															</td>
+															<td className='capitalize'>{leave.type}</td>
+															<td className={`max-w-[200px] ${classes}`}>{leave.reason}</td>
+															<td className={`${classes}`}><span className={`text-white rounded-md px-4 py-1 capitalize ${leave.status == 'approved' ? 'bg-green-400' : (leave.status == 'rejected' ? 'bg-red-400' : 'bg-deep-orange-500')} `}>{leave.status}</span></td>
+															<td className={`max-w-[200px] ${classes}`}>{leave.remarks ?? '-'}</td>
+															<td className={`max-w-[200px] ${classes}`}>
+																{leave.status == 'pending' &&
+																	<div className='flex flex-col gap-2'>
+																		<>
+																			<Button onClick={() => handleModalAc(leave.id)} >Approve</Button>
+																			<Button onClick={() => handleModalRj(leave.id)}>Reject</Button>
+	
+																			
+																		</>
+																	</div>
+																}
+															</td>
+														</>
+													:
+														<>
+															<td className={`max-w-[150px] break-words ${classes}`}>
+																<div className="flex flex-col">
+																	<div className=""><span className='font-bold'>From:</span> {format(startbodyateRaw, 'MMM dd, yyyy')}</div>
+																	<div className=""><span className='font-bold'>To:</span> {format(endDateRaw, 'MMM dd, yyyy')}</div>
+																</div>
+															</td>
+															<td className={`capitalize  ${classes}`}>{leave.type}</td>
+															<td className={`  ${classes}`}>{leave.reason}</td>
+															<td className={`  ${classes}`}><span className={`text-white rounded-md px-4 py-1 capitalize ${leave.status == 'approved' ? 'bg-green-400' : (leave.status == 'rejected' ? 'bg-red-400' : 'bg-deep-orange-500')} `}>{leave.status}</span></td>
+															<td className={`  ${classes}`}>{leave.remarks ?? '-'}</td>
+															<td className={`  ${classes}`}>
+																{leave.status == 'pending' &&
 																	<>
-																		<Button onClick={handleModalAc}>Approve</Button>
-																		<Button onClick={handleModalRj}>Reject</Button>
-
-																		<Dialog open={isOpenAccept} handler={handleModalAc} id="leaveApproveDialog">
-																			<DialogHeader>Approve Leave</DialogHeader>
+																		<Button>Cancel Request</Button>
+																		<Dialog>
+																			<DialogHeader>Cancel Leave Request</DialogHeader>
+	
 																			<DialogBody>
-																				<div className='flex flex-col gap-3'>
-																					<label>
-																						<Typography as="div" size="2" mb="1" weight="bold">
-																							Remarks
-																						</Typography>
-																						<Textarea placeholder="Remarks to Employee..." className="w-full" onChange={(e) => { setRemarks(e.target.value) }}>
-																							{remarks}
-																						</Textarea>
-																					</label>
+																				<div className='flex justify-end gap-3 mt-4'>
+																					<Button color="gray" variant="gradient" id="approveLeave" onClick={() => cancelRequest(leave.id)} > <Spinner loading={formLoader} size={2} /> Yes</Button>
 																				</div>
 																			</DialogBody>
 																			<DialogFooter>
-																				<div className='flex gap-3 mt-4 justify-end'>
-																					
-																					<Button onClick={() => approveLeave(leave.id)} className={`flex justify-center items-center gap-2 ${formSubmitingAc ? 'opacity-50 cursor-not-allowed' : '' } `} variant="gradient" color="green" type='submit' disabled={formSubmitingAc} >
-																						{formSubmitingAc && <span><Spinner/></span> }
-																						<span>Approve</span>
-																					</Button>
-
-																					<Button variant="soft" color="crimson" id="leaveApprClosebtn" onClick={() => handleModalAc()} >
-																						Cancel
-																					</Button>
-																				</div>
-																			</DialogFooter>
-																		</Dialog>
-																		<Dialog open={isOpenReject} handler={handleModalRj} id="leaveRejectbodyialog">
-																			<DialogHeader>Reject Leave</DialogHeader>
-
-																			<DialogBody>
-																				<div className='flex flex-col gap-3'>
-																					<label>
-																						<Typography as="div" size="2" mb="1" weight="bold">
-																							Remarks
-																						</Typography>
-																						<Textarea placeholder="Remarks to Employee..." className="w-full" onChange={(e) => { setRemarks(e.target.value) }}>
-																							{remarks}
-																						</Textarea>
-																					</label>
-																				</div>
-
-																			
-																			</DialogBody>
-																			
-																			<DialogFooter>
-																				<div className='flex gap-3 mt-4 justify-end'>
-																					
-																					<Button className={`flex justify-center items-center gap-2 ${formSubmitingRj ? 'opacity-50 cursor-not-allowed' : '' } `} variant="gradient" color="red" type='submit' onClick={() => rejectLeave(leave.id)}  disabled={formSubmitingRj} >
-																						{formSubmitingRj && <span><Spinner/></span> }
-																						<span>Reject</span>
-																					</Button>
-
-																					<Button variant="soft" color="crimson" id="leaveApprClosebtn" onClick={() => handleModalRj()} >
-																						Cancel
-																					</Button>
-																				</div>
+																				<Button variant="outlined" color="red">
+																					Cancel
+																				</Button>
 																			</DialogFooter>
 																		</Dialog>
 																	</>
-																</div>
-															}
-														</td>
-													</tr>
-													:
-
-													<tr key={index}>
-														<td className={`max-w-[150px] break-words ${classes}`}>
-															<div className="flex flex-col">
-																<div className=""><span className='font-bold'>From:</span> {format(startbodyateRaw, 'MMM dd, yyyy')}</div>
-																<div className=""><span className='font-bold'>To:</span> {format(endDateRaw, 'MMM dd, yyyy')}</div>
-															</div>
-														</td>
-														<td className={`capitalize  ${classes}`}>{leave.type}</td>
-														<td className={`  ${classes}`}>{leave.reason}</td>
-														<td className={`  ${classes}`}><span className={`text-white rounded-md px-4 py-1 capitalize ${leave.status == 'approved' ? 'bg-green-400' : (leave.status == 'rejected' ? 'bg-red-400' : 'bg-deep-orange-500')} `}>{leave.status}</span></td>
-														<td className={`  ${classes}`}>{leave.remarks ?? '-'}</td>
-														<td className={`  ${classes}`}>
-															{leave.status == 'pending' &&
-																<>
-																	<Button>Cancel Request</Button>
-																	<Dialog>
-																		<DialogHeader>Cancel Leave Request</DialogHeader>
-
-																		<DialogBody>
-																			<div className='flex justify-end gap-3 mt-4'>
-																				<Button color="green" variant="soft" id="approveLeave" onClick={() => cancelRequest(leave.id)} > <Spinner loading={formLoader} size={2} /> Yes</Button>
-																			</div>
-																		</DialogBody>
-																		<DialogFooter>
-																			<Button variant="soft" color="crimson">
-																				Cancel
-																			</Button>
-																		</DialogFooter>
-																	</Dialog>
-																</>
-															}
-														</td>
-													</tr>
-												}
-											</>
+																}
+															</td>
+														</>
+													}
+												</tr>
 										)
 									}) :
 									(<tr>
@@ -554,6 +487,63 @@ const LeaveManagement = () => {
 					</tbody>
 				</table>
 			</CardBody>
+			<Dialog open={isOpenAccept} handler={() => setIsOpenAccept(!isOpenAccept)}  id="leaveApproveDialog">
+				<DialogHeader>Approve Leave</DialogHeader>
+				<DialogBody>
+					<div className='flex flex-col gap-3'>
+						<label>
+							<Typography as="div" size="2" mb="1" weight="bold">
+								Remarks
+							</Typography>
+							<Textarea placeholder="Remarks to Employee..." className="w-full" onChange={(e) => { setRemarks(e.target.value) }} value={remarks} />
+						</label>
+					</div>
+				</DialogBody>
+				<DialogFooter>
+					<div className='flex gap-3 mt-4 justify-end'>
+						
+						<Button onClick={() => approveLeave(selectedLeave)} className={`flex justify-center items-center gap-2 ${formSubmitingAc ? 'opacity-50 cursor-not-allowed' : '' } `} variant="gradient" color="gray" type='submit' disabled={formSubmitingAc} >
+							{formSubmitingAc && <span><Spinner/></span> }
+							<span>Approve</span>
+						</Button>
+
+						<Button variant="outlined" color="red" id="leaveApprClosebtn" onClick={() => handleModalAc()} >
+							Cancel
+						</Button>
+					</div>
+				</DialogFooter>
+			</Dialog>
+			<Dialog open={isOpenReject} handler={() => setIsOpenReject(!isOpenReject)}  id="leaveRejectbodyialog">
+				<DialogHeader>Reject Leave</DialogHeader>
+
+				<DialogBody>
+					<div className='flex flex-col gap-3'>
+						<label>
+							<Typography as="div" size="2" mb="1" weight="bold">
+								Remarks
+							</Typography>
+							<Textarea placeholder="Remarks to Employee..." className="w-full" onChange={(e) => { setRemarks(e.target.value) }} value={remarks}>
+							</Textarea>
+						</label>
+					</div>
+
+				
+				</DialogBody>
+				
+				<DialogFooter>
+					<div className='flex gap-3 mt-4 justify-end'>
+						
+						<Button className={`flex justify-center items-center gap-2 ${formSubmitingRj ? 'opacity-50 cursor-not-allowed' : '' } `} variant="gradient" color="gray" type='submit' onClick={() => rejectLeave(selectedLeave)}  disabled={formSubmitingRj} >
+							{formSubmitingRj && <span><Spinner/></span> }
+							<span>Reject</span>
+						</Button>
+
+						<Button variant="outlined" color="red" id="leaveApprClosebtn" onClick={() => handleModalRj()} >
+							Cancel
+						</Button>
+					</div>
+				</DialogFooter>
+			</Dialog>
 		</Card>
 	)
 }

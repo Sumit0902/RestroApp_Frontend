@@ -177,24 +177,23 @@ const MySchedule = () => {
               ) : (
                 employees.length > 0 ? (
                     employees.map((employee) => (
-                        <tr key={employee.id}>
-                            {/* Employee Name */}
+                        <tr key={employee.id}> 
                             <td className="px-2 py-4 font-medium text-gray-900 border-b">
                                 {employee.firstname} {employee.lastname} { myid == employee.id && <span className="font-medium italic">(You)</span>}
-                            </td>
-                            {/* Days of the Week */}
+                            </td> 
                             {weekDays.map((day, index) => {
                                 const shiftData = schedules[employee.id];
-                                const formattedDay = format(day, "yyyy-MM-dd"); // Format the day to match the schedule format
-
-                                // Check if there is a shift for the current day
+                                const formattedDay = format(day, "yyyy-MM-dd");  
+ 
                                 const dayShift = shiftData?.shifts?.find((shift) => shift.date === formattedDay);
-      console.log(dayShift, shiftData?.shifts)
                                 return (
                                     <td key={index} className="group px-2 py-4 border-b w-[9rem]">
-                                        {dayShift && (
+                                        {dayShift ? (
                                             <ShiftCell shift={dayShift} notes={shiftData?.notes} />
-                                        )}
+                                        )
+                                        :
+                                        <span className="text-gray-500">No Shift</span>
+                                        }
                                     </td>
                                 );
                             })}
@@ -206,7 +205,7 @@ const MySchedule = () => {
                             className="px-2 py-4 whitespace-nowrap border-b border-gray-200 col-span-8 text-center"
                             colSpan={8}
                         >
-                            No Employee added yet
+                            No Schedule added yet
                         </td>
                     </tr>
                 )

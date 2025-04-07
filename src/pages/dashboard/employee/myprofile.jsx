@@ -20,22 +20,24 @@ const MyProfile = () => {
 		company_role: userData?.company_role || '',
 		wage: userData?.wage || 'daily',
 		wage_rate: userData?.wage_rate || '',
-		password: '', // Add password to the form data
+		password: '', 
 		avatar: null,
 	});
 	const [avatarPreview, setAvatarPreview] = useState(userData?.avatar || '');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	// Two-Factor Authentication State
-	const [twoFactorEnabled, setTwoFactorEnabled] = useState(userData?.two_factor || false);
+	const [twoFactorEnabled, setTwoFactorEnabled] = useState(userData?.two_factor_enabled || false);
 	const [qrCode, setQrCode] = useState('');
 	const [twoFactorCode, setTwoFactorCode] = useState('');
 	const [isModalOpen, setIsModalOpen] = useState(false);
-
+	const [recoveryCodes, setRecoveryCodes] = useState([]);
+	const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
+	const [disablePassword, setDisablePassword] = useState('');
+	const [disableError, setDisableError] = useState('');
+	
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
 
-		// Validate wage_rate to allow only numeric values with up to 2 decimal points
 		if (name === 'wage_rate' && value && !/^\d*\.?\d{0,2}$/.test(value)) {
 			return;
 		}
@@ -50,7 +52,7 @@ const MyProfile = () => {
 			setAvatarPreview(URL.createObjectURL(file));
 		}
 	};
-
+	console.log('2fa en',twoFactorEnabled)
 	const handleUpdateProfile = async (e) => {
 		e.preventDefault();
 		setIsSubmitting(true);
@@ -114,12 +116,36 @@ const MyProfile = () => {
 			const response = await authAxios.post(`/companies/${userData.company.id}/employees/${userData.id}/confirm-2fa`, {
 				code: twoFactorCode,
 			});
+
 			toast.success('Two-factor authentication enabled successfully!');
 			setTwoFactorEnabled(true);
-			setIsModalOpen(false);
+			setQrCode(''); // Hide QR code
+			setTwoFactorCode(''); // Clear input field
+			setRecoveryCodes(response.data.recovery_codes); // Save recovery codes
 			dispatch(updateUserProfile({ ...userData, two_factor: true })); // Update 2FA status in Redux
 		} catch (error) {
 			toast.error('Failed to confirm 2FA.');
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const handleDisable2FA = async () => {
+		setIsSubmitting(true);
+		setDisableError(''); // Clear any previous errors
+		try {
+			const response = await authAxios.post(`/companies/${userData.company.id}/employees/${userData.id}/disable-2fa`, {
+				password: disablePassword,
+			});
+
+			toast.success('Two-factor authentication disabled successfully!');
+			setTwoFactorEnabled(false); // Update the state to reflect 2FA is disabled
+			dispatch(updateUserProfile({ ...userData, two_factor: false })); // Update 2FA status in Redux
+			setIsDisableModalOpen(false); // Close the modal
+			setDisablePassword(''); // Clear the password input
+		} catch (error) {
+			console.error('Error disabling 2FA:', error);
+			setDisableError(error.response?.data?.error || 'Failed to disable 2FA.'); // Show error in modal
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -183,6 +209,7 @@ const MyProfile = () => {
 							name="company_role"
 							type="text"
 							value={formData.company_role ? formData.company_role : 'Not Assigned'}
+							readOnly
 						/>
 						{/* Wage */}
 						<div>
@@ -252,7 +279,13 @@ const MyProfile = () => {
 					<Typography variant="h6">Two-Factor Authentication</Typography>
 					<Switch
 						checked={twoFactorEnabled}
-						onChange={handleEnable2FA}
+						onChange={(checked) => {
+							if (!twoFactorEnabled) {
+								handleEnable2FA(); // Enable 2FA
+							} else {
+								setIsDisableModalOpen(true); // Open the disable 2FA modal
+							}
+						}}
 					/>
 				</div>
 				{twoFactorEnabled && (
@@ -265,10 +298,33 @@ const MyProfile = () => {
 			{/* Modal for QR Code and 2FA Confirmation */}
 			<Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)}>
 				<Card className="p-6">
-					{!qrCode ? (
+					{!qrCode && recoveryCodes.length === 0 ? (
 						<Typography variant="h6" className="text-center">
 							Loading QR Code...
 						</Typography>
+					) : recoveryCodes.length > 0 ? (
+						<>
+							<Typography variant="h6" className="mb-4 text-center">
+								Recovery Codes
+							</Typography>
+							<Typography variant="paragraph" className="mb-4 text-center">
+								Save these recovery codes in a secure location. You can use them to access your account if you lose access to your authenticator app.
+							</Typography>
+							<div className="bg-gray-100 p-4 rounded-md mb-4">
+								{recoveryCodes.map((code, index) => (
+									<Typography key={index} variant="small" className="block text-center font-mono">
+										{code}
+									</Typography>
+								))}
+							</div>
+							<Button
+								color="blue"
+								fullWidth
+								onClick={() => setIsModalOpen(false)}
+							>
+								Close
+							</Button>
+						</>
 					) : (
 						<>
 							<Typography variant="h6" className="mb-4 text-center">
@@ -294,6 +350,54 @@ const MyProfile = () => {
 							</form>
 						</>
 					)}
+				</Card>
+			</Dialog>
+
+			{/* Modal for Disabling 2FA */}
+			<Dialog open={isDisableModalOpen} onClose={() => setIsDisableModalOpen(false)}>
+				<Card className="p-6">
+					<Typography variant="h6" className="mb-4 text-center">
+						Confirm Password to Disable 2FA
+					</Typography>
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							handleDisable2FA();
+						}}
+					>
+						<Input
+							label="Password"
+							type="password"
+							value={disablePassword}
+							onChange={(e) => setDisablePassword(e.target.value)}
+							required
+						/>
+						{disableError && (
+							<Typography variant="small" color="red" className="mt-2">
+								{disableError}
+							</Typography>
+						)}
+						<div className="flex justify-end gap-4 mt-6">
+							<Button
+								color="red"
+								variant="text"
+								onClick={() => {
+									setIsDisableModalOpen(false);
+									setDisablePassword('');
+									setDisableError('');
+								}}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="submit"
+								color="blue"
+								disabled={isSubmitting}
+							>
+								{isSubmitting ? 'Disabling...' : 'Disable'}
+							</Button>
+						</div>
+					</form>
 				</Card>
 			</Dialog>
 		</div>

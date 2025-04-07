@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { logout } from '@/store/features/auth/AuthSlice.js'
 import { toast } from 'react-toastify'
 import { Button, Card, Dialog, DialogBody, DialogFooter, DialogHeader, Input, Spinner, Typography } from '@material-tailwind/react';
-import { Bars3Icon } from '@heroicons/react/24/solid'; 
+import { Bars3Icon, TrashIcon } from '@heroicons/react/24/solid'; 
 export default function Shifts() {
 
 	const [shifts, setShifts] = useState([]);
@@ -20,6 +20,10 @@ export default function Shifts() {
 	const [shiftName, setShiftName] = useState('')
 	const [startTime, setStartTime] = useState('')
 	const [endTime, setEndTime] = useState('')
+
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+	const [shiftToDelete, setShiftToDelete] = useState(null);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	const userData = useSelector(state => state.auth.user)
 	const navigate = useNavigate();
@@ -33,8 +37,7 @@ export default function Shifts() {
 			setShifts(response.data.data);
 		} catch (error) {
 			if (error.response?.status == 403) {
-				setLoading(false)
-				// token must be expired 
+				setLoading(false)  
 				dispatch(logout);
 				toast.error('Your session has expired. please login again');
 
@@ -74,6 +77,39 @@ export default function Shifts() {
 		setformSubmiting(false);
 	}
 
+	const handleOpenDeleteModal = (shift) => {
+		setShiftToDelete(shift);
+		setIsDeleteModalOpen(true);
+	};
+
+	const handleCloseDeleteModal = () => {
+		setShiftToDelete(null);
+		setIsDeleteModalOpen(false);
+		setIsDeleting(false);
+	};
+
+	const handleDeleteShift = async () => {
+		if (!shiftToDelete) return;
+	
+		setIsDeleting(true);
+	
+		try {
+			const companyId = userData.company.id;
+			await axiosInstance.delete(`/companies/${companyId}/shifts/${shiftToDelete.id}/delete`);
+	
+			// Remove the deleted shift from the state
+			setShifts(shifts.filter((shift) => shift.id !== shiftToDelete.id));
+	
+			toast.success("Shift deleted successfully!");
+			handleCloseDeleteModal();
+		} catch (error) {
+			console.error("Error deleting shift:", error.response?.data?.error || error.message);
+			toast.error("An error occurred while deleting the shift. Please try again.");
+		} finally {
+			setIsDeleting(false);
+		}
+	};
+
 	const handleSubmit = async (event) => {
 		if(formSubmiting) {
 			return false;
@@ -87,15 +123,13 @@ export default function Shifts() {
 		formData.append('start_time', startTime);
 		formData.append('end_time', endTime);
 		const shiftData = Object.fromEntries(formData.entries());
-		console.log(formData, shiftData);
+	 
 
 		if (shiftData.start_time) {
-			if (shiftData.start_time.length === 5) { // "HH:mm"
+			if (shiftData.start_time.length === 5) {
 				shiftData.start_time += ":00";
 			}
 			const parsedStartTime = parse(shiftData.start_time, 'HH:mm:ss', new Date());
-
-			// Check if the parsed time is valid
 			if (isValid(parsedStartTime)) {
 				// Format the parsed time back to 'HH:mm:ss'
 				shiftData.start_time = format(parsedStartTime, 'HH:mm:ss');
@@ -106,7 +140,7 @@ export default function Shifts() {
 		}
 
 		if (shiftData.end_time) {
-			if (shiftData.end_time.length === 5) { // "HH:mm"
+			if (shiftData.end_time.length === 5) { 
 				shiftData.end_time += ":00";
 			}
 			const parsedEndTime = parse(shiftData.end_time, 'HH:mm:ss', new Date());
@@ -119,28 +153,21 @@ export default function Shifts() {
 		try {
 			let companyId = userData.company.id;
 			if (currentShift) {
-				// Update shift
 				const response = await axiosInstance.patch(
 					`/companies/${companyId}/shifts/${currentShift.id}/update`,
 					shiftData
 				);
 				const updatedShift = response.data.data;
 				console.log('after update shift', shiftData);
-
-				// Update state with edited shift
 				setShifts(shifts.map((shift) => (shift.id === currentShift.id ? updatedShift : shift)));
 
 			} else {
 				console.log('after add shift', shiftData);
-
-				// Add new shift
 				const response = await axiosInstance.post(
 					`/companies/${companyId}/shifts/add`,
 					shiftData
 				);
 				const newShift = response.data.data;
-
-				// Add new shift to state
 				setShifts([...shifts, newShift]);
 			}
 
@@ -172,7 +199,7 @@ export default function Shifts() {
 								<th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">Shift Name</th>
 								<th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">Start Time</th>
 								<th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">End Time</th>
-								<th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 text-center">Actions</th>
+								<th className="w-[20%] border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 text-center">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -192,9 +219,12 @@ export default function Shifts() {
 											<td className="text-center p-4">{format(parse(shift.start_time, 'HH:mm:ss', new Date()), 'hh:mm a')}</td>
 											<td className="text-center p-4">{format(parse(shift.end_time, 'HH:mm:ss', new Date()), 'hh:mm a')}</td>
 											{/* <TableCell>{shift.description}</TableCell> */}
-											<td className='text-center p-4'>
+											<td className='w-[20%] flex text-center p-4 gap-4'>
 												<Button   onClick={() => handleOpenModal(shift)}>
 													<Edit className="h-4 w-4" />
+												</Button>
+												<Button color="red" onClick={() => handleOpenDeleteModal(shift)}>
+													<TrashIcon className="h-4 w-4" />
 												</Button>
 											</td>
 										</tr>
@@ -271,6 +301,36 @@ export default function Shifts() {
 							<Button className={`flex justify-center items-center gap-2 ${formSubmiting ? 'opacity-50 cursor-not-allowed' : '' } `} variant="gradient" color="green" type='submit' onClick={handleSubmit} disabled={formSubmiting} >
 								{formSubmiting && <span><Spinner/></span> }
 								<span>{currentShift ? 'Update' : 'Add'}</span>
+							</Button>
+						</DialogFooter>
+					</Dialog>
+
+					<Dialog open={isDeleteModalOpen} handler={handleOpenDeleteModal}>
+						<DialogHeader>Confirm Delete</DialogHeader>
+						<DialogBody>
+							<Typography>
+								Are you sure you want to delete the shift{" "}
+								<span className="font-bold">{shiftToDelete?.name}</span>?
+							</Typography>
+						</DialogBody>
+						<DialogFooter>
+							<Button
+								variant="text"
+								color="blue-gray"
+								onClick={handleCloseDeleteModal}
+								className="mr-1"
+							>
+								Cancel
+							</Button>
+							<Button
+								variant="gradient"
+								color="red"
+								onClick={handleDeleteShift}
+								className={`flex justify-center items-center gap-2 ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
+								disabled={isDeleting}
+							>
+								{isDeleting && <Spinner />}
+								Confirm
 							</Button>
 						</DialogFooter>
 					</Dialog>

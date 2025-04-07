@@ -170,11 +170,7 @@ const Employees = () => {
 								Designation
 							</Typography>
 						</th>
-						<th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4" >
-							<Typography>
-								Status
-							</Typography>
-						</th>
+						 
 						<th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4" >
 							<Typography>
 								Joining Date
@@ -250,16 +246,6 @@ const Employees = () => {
 									{company_role ?? '-'}
 									</Typography>
 									
-								</div>
-								</td>
-								<td className={classes}>
-								<div className="w-max">
-									<Chip
-									variant="ghost"
-									size="sm"
-									value={online ? "online" : "offline"}
-									color={online ? "green" : "blue-gray"}
-									/>
 								</div>
 								</td>
 								<td className={classes}>

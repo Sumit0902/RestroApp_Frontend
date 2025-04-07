@@ -60,7 +60,7 @@ const CompanyProfile = () => {
 				logo: null, // The actual file for upload
 				logoPreview: null, // Temporary preview of the uploaded image
 				originalLogo: cData.logo,
-				workingDays: cData.workingDays.length > 0 ? (cData.workingDays).split(',').map(Number) : [],
+				workingDays: cData.workingDays?.length > 0 ? (cData.workingDays).split(',').map(Number) : [],
 			});
 
 			console.log('companyData', companyData)

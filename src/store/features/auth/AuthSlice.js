@@ -57,31 +57,7 @@ export const verifyTwoFactor = createAsyncThunk(
         }
     }
 );
-
-// Update User Profile action
-// export const updateUserProfile = createAsyncThunk(
-//     'auth/updateUserProfile',
-//     async (userId, formdata, thunkAPI) => {
-// 		console.log('redx', userId, formdata)
-//         try {
-//             const response = await axios.post(
-//                 `${import.meta.env.VITE_API_URL}/companies/employee/${data}/update`,
-//                 formData,
-//                 {
-//                     headers: {
-//                         'Content-Type': 'multipart/form-data',
-//                     },
-//                 }
-//             );
-//             return response.data;
-//         } catch (error) {
-//             const errorMessage =
-//                 error.response?.data?.message || 'Failed to update profile';
-//             return thunkAPI.rejectWithValue(errorMessage);
-//         }
-//     }
-// );
-
+ 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -91,10 +67,6 @@ const authSlice = createSlice({
             state.status = 'idle';
             state.error = null;
             localStorage.clear();
-        },
-		updateUserProfile: (state, action) => {
-            // Update the user object in the Redux state
-            state.user = { ...state.user, ...action.payload }; // Merge updated fields into the user state
         },
     },
     extraReducers: (builder) => {
@@ -132,21 +104,6 @@ const authSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.payload; // Store error message
             })
-            // Update User Profile
-            // .addCase(updateUserProfile.pending, (state) => {
-            //     state.status = 'loading';
-            // })
-            // .addCase(updateUserProfile.fulfilled, (state, action) => {
-            //     state.status = 'succeeded';
-            //     state.user = { ...state.user, ...action.payload }; // Merge updated fields into user state
-            //     state.error = null;
-            // })
-            // .addCase(updateUserProfile.rejected, (state, action) => {
-            //     state.status = 'failed';
-            //     state.error = action.payload;
-            // })
-
-            // Handle PURGE
             .addCase(PURGE, () => {
                 return initialState;
             });

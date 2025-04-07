@@ -40,10 +40,14 @@ export default function Schedules() {
     const [openEditModal, setOpenEditModal] = useState(false);
   
     const handleOpenAddModal = (employeeId, dayIndex) => {
-		console.log('hdn', employeeId , dayIndex)
+		console.log('hdn', employeeId , dayIndex, selDays)
 		if(!openAddModal) {
 			setSelEmployee(employeeId);
-			// setSelDays([dayIndex]); 
+            if(isWorkingDay(dayIndex)) {
+                setSelDays([dayIndex]); 
+            } else {
+                setSelDays([]); 
+            }
 		}
 		else {
 			setSelEmployee("");
@@ -54,6 +58,7 @@ export default function Schedules() {
     const handleOpenEditModal = () => setOpenEditModal(!openEditModal);
 
     const convertDaysToArray = (daysString) => {
+        if(daysString.length === 0) return [];
         return daysString.split(',').map(Number);
     }
 
@@ -120,7 +125,10 @@ export default function Schedules() {
         fetchSchedules();
 
         let compDays = userData?.company.workingDays || []; 
-        setOpDays(convertDaysToArray(compDays))
+        console.log(compDays, 'comp days', compDays.length === 0)
+        if (compDays.length !== 0) {
+            setOpDays(convertDaysToArray(compDays))
+        }
         console.log('week nu', weekNumber)
     }, [weekOffset]);
 
@@ -440,9 +448,8 @@ export default function Schedules() {
                                                 {/* Days of the Week */}
                                                 {weekDays.map((day, index) => {
                                                     const shiftData = schedules[employee.id];
-                                                    const formattedDay = format(day, "yyyy-MM-dd"); // Format the day to match the schedule format
-
-                                                    // Check if there is a shift for the current day
+                                                    const formattedDay = format(day, "yyyy-MM-dd");
+                                                    
                                                     const dayShift = shiftData?.shifts?.find((shift) => shift.date === formattedDay);
 													console.log(dayShift, shiftData?.shifts)
                                                     return (
@@ -548,14 +555,14 @@ export default function Schedules() {
                 </DialogBody>
                 <DialogFooter>
                 <Button
-                    variant="text"
+                    variant="outlined"
                     color="red"
                     onClick={handleOpenAddModal}
                     className="mr-1"
                 >
                     <span>Cancel</span>
                 </Button>
-                <Button variant="gradient" color="green" onClick={addSchedule}>
+                <Button variant="gradient" color="gray" onClick={addSchedule}>
                     <span>Save Schedule</span>
                 </Button>
                 </DialogFooter>
@@ -567,14 +574,14 @@ export default function Schedules() {
                 </DialogBody>
                 <DialogFooter>
                 <Button
-                    variant="text"
+                    variant="outlined"
                     color="red"
                     onClick={handleOpenEditModal}
                     className="mr-1"
                 >
                     <span>Cancel</span>
                 </Button>
-                <Button variant="gradient" color="green" onClick={handleOpenEditModal}>
+                <Button variant="gradient" color="gray" onClick={handleOpenEditModal}>
                     <span>Confirm</span>
                 </Button>
                 </DialogFooter>

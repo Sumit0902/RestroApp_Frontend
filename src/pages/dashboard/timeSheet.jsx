@@ -220,49 +220,49 @@ function TimeSheet() {
                           </tr>
                         </thead>
                         <tbody>
-  {attendanceData.map((entry) => {
-    let totalHours = 0; // Initialize total hours for the employee
-    return (
-      <tr key={entry.user.id}>
-        {/* Employee Name */}
-        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-          {entry.user.firstname} {entry.user.lastname}
-        </td>
-        {/* Days of the Week */}
-        {weeks[selectedWeek].map((day) => {
-          const date = format(day, 'yyyy-MM-dd'); // Format the day to match the attendance date
-          const record = entry.attendance[date] || { check_in: null, check_out: null }; // Get attendance record for the day
-          const hours = calculateHours(record.check_in, record.check_out); // Calculate hours worked
-          totalHours += parseFloat(hours); // Add to total hours
+                          {attendanceData.map((entry) => {
+                            let totalHours = 0; // Initialize total hours for the employee
+                            return (
+                              <tr key={entry.user.id}>
+                                {/* Employee Name */}
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                  {entry.user.firstname} {entry.user.lastname}
+                                </td>
+                                {/* Days of the Week */}
+                                {weeks[selectedWeek].map((day) => {
+                                  const date = format(day, 'yyyy-MM-dd'); // Format the day to match the attendance date
+                                  const record = entry.attendance[date] || { check_in: null, check_out: null }; // Get attendance record for the day
+                                  const hours = calculateHours(record.check_in, record.check_out); // Calculate hours worked
+                                  totalHours += parseFloat(hours); // Add to total hours
 
-          return (
-            <td
-              key={day}
-              style={{
-                border: '1px solid #ddd',
-                padding: '8px',
-                backgroundColor: hours > 0 ? '#d4edda' : '#f8d7da', // Green for worked hours, red for no attendance
-              }}
-            >
-              {record.check_in && record.check_out ? (
-                <>
-                  <div>{format(new Date(`${date}T${record.check_in}`), 'hh:mm a')}</div>
-                  <div>{format(new Date(`${date}T${record.check_out}`), 'hh:mm a')}</div>
-                </>
-              ) : (
-                '-' // Display "-" if no attendance
-              )}
-            </td>
-          );
-        })}
-        {/* Total Hours */}
-        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-          {totalHours.toFixed(1)}h
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
+                                  return (
+                                    <td
+                                      key={day}
+                                      style={{
+                                        border: '1px solid #ddd',
+                                        padding: '8px',
+                                        backgroundColor: hours > 0 ? '#d4edda' : '#f8d7da', // Green for worked hours, red for no attendance
+                                      }}
+                                    >
+                                      {record.check_in && record.check_out ? (
+                                        <>
+                                          <div>{format(new Date(`${date}T${record.check_in}`), 'hh:mm a')}</div>
+                                          <div>{format(new Date(`${date}T${record.check_out}`), 'hh:mm a')}</div>
+                                        </>
+                                      ) : (
+                                        '-' // Display "-" if no attendance
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                                {/* Total Hours */}
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                  {totalHours.toFixed(1)}h
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
                       </table>
                     </Card>
                   ) : (

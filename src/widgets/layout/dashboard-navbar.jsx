@@ -185,7 +185,7 @@ export function DashboardNavbar() {
                             color="blue-gray"
                             className="font-normal"
                         >
-                            {page}
+                            {page || ""}
                         </Typography>
                     </Breadcrumbs>
                     <Typography variant="h6" color="blue-gray">
@@ -211,9 +211,9 @@ export function DashboardNavbar() {
                         </MenuHandler>
                         <MenuList className="w-max border-0">
                             {notifications?.length > 0 ?
-                                notifications.map((notif) => { 
+                                notifications.map((notif, k) => { 
                                     return (
-                                        <MenuItem className={`flex items-center gap-3 min-w-44 ${notif?.is_read ? '' : 'bg-blue-gray-100/50 font-bold'}`}>
+                                        <MenuItem key={k} className={`flex items-center gap-3 min-w-44 ${notif?.is_read ? '' : 'bg-blue-gray-100/50 font-bold'}`}>
                                             <div>
                                                 <Typography
                                                     variant="small"

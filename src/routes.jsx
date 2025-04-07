@@ -11,7 +11,7 @@ import {
   ClipboardIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
-import { SignIn, SignUp } from "@/pages/auth"; 
+import { ForgetPassword, SignIn, SignUp } from "@/pages/auth"; 
 import CompanyProfile from "./pages/dashboard/companyProfile";
 import Shifts from "./pages/dashboard/shifts";
 import Schedules from "./pages/dashboard/schedules";
@@ -27,6 +27,7 @@ import MyTimesheet from "./pages/dashboard/employee/mytimesheet";
 import MyLeaves from "./pages/dashboard/employee/myleaves";
 import MyPayroll from "./pages/dashboard/employee/mypayroll";
 import SingleEmployee from "./pages/dashboard/singleEmployee";
+import ResetPassword from "./pages/auth/reset-password";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -212,6 +213,18 @@ export const routes = [
         name: "sign up",
         path: "/sign-up",
         element: <SignUp />,
+      },
+      {
+        icon: <RectangleStackIcon {...icon} />,
+        name: "forget  password",
+        path: "/forget-password",
+        element: <ForgetPassword />,
+      },
+      {
+        icon: <RectangleStackIcon {...icon} />,
+        name: "reset password",
+        path: "/reset-password",
+        element: <ResetPassword />,
       },
     ],
   },

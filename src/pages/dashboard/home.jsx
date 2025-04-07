@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Typography,
 	Card,
@@ -12,32 +12,31 @@ import {
 	Avatar,
 	Tooltip,
 	Progress,
+	Spinner,
+	Button,
 } from "@material-tailwind/react";
 import {
 	EllipsisVerticalIcon,
 	ArrowUpIcon,
+	CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import { StatisticsCard } from "@/widgets/cards";
-import { StatisticsChart } from "@/widgets/charts";
-import {
-	statisticsCardsData,
-	statisticsChartsData,
-	projectsTableData,
-	ordersOverviewData,
-} from "@/data";
-import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import useAuthAxios from "@/lib/authAxios";
+import { format, getISOWeek, getYear, startOfWeek, endOfWeek } from "date-fns"; 
+import { ListBulletIcon, UserGroupIcon, UserIcon } from "@heroicons/react/24/solid";
 
 export function Home() {
 	const userData = useSelector((state) => state.auth.user);
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const axiosInstance = useAuthAxios();
 	const [schedules, setSchedules] = useState({});
 	const [weekOffset, setWeekOffset] = useState(0);
+	const [tasks, setTasks] = useState([]); 
+
 	if (!userData || null === userData) {
 		dispatch(logout);
 		setTimeout(() => {
@@ -47,12 +46,18 @@ export function Home() {
 
 	const fetchEmployeeSchedule = async () => {
 		setLoading(true);
+
+		const currentDate = new Date();
+		const year = getYear(currentDate); 
+		const weekNumber = getISOWeek(currentDate); 
+
 		try {
-			const response = await axiosInstance.post(`/companies/${userData.company.id}/schedules`, {
+			const response = await axiosInstance.post(`/companies/${userData.company.id}/schedules/${userData.id}`, {
 				week_number: weekNumber,
 				year: year,
 				company_id: userData.company.id,
 			});
+			console.log('user week s', response.data)
 			if (response?.data.success) {
 				setSchedules(response.data.data);
 			}
@@ -62,7 +67,102 @@ export function Home() {
 			setLoading(false);
 		}
 	}
+
+	const fetchWeeklyTasks = async () => {
+		setLoading(true);
+ 
+		const currentDate = new Date();
+		const weekStart = format(startOfWeek(currentDate, { weekStartsOn: 1 }), "yyyy-MM-dd");
+		const weekEnd = format(endOfWeek(currentDate, { weekStartsOn: 1 }), "yyyy-MM-dd");
+
+		try {
+			const response = await axiosInstance.post(
+				`/companies/${userData.company.id}/tasks/${userData.id}/weekly`,
+				{
+					company_id: userData.company.id,
+					employee_id: userData.id,
+					week_start: weekStart,
+					week_end: weekEnd,
+				}
+			);
+
+			if (response?.data.success) {
+				setTasks(response.data.data);  
+			}
+		} catch (error) {
+			console.error("Error fetching weekly tasks:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchCompanyWeeklyTasks = async () => {
+		setLoading(true);
+ 
+		const currentDate = new Date();
+		const weekStart = format(startOfWeek(currentDate, { weekStartsOn: 1 }), "yyyy-MM-dd");
+		const weekEnd = format(endOfWeek(currentDate, { weekStartsOn: 1 }), "yyyy-MM-dd");
+
+		try {
+			const response = await axiosInstance.post(
+				`/companies/${userData.company.id}/tasks/weekly`,
+				{
+					company_id: userData.company.id,
+					week_start: weekStart,
+					week_end: weekEnd,
+				}
+			);
+
+			if (response?.data.success) {
+				setTasks(response.data.data); 
+			}
+		} catch (error) {
+			console.error("Error fetching company weekly tasks:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchTotalEmployees = async () => {
+		
+	}
+
+	const fetchLastMonthPayout = async () => { 
+
+	}
+
+	const markTaskComplete = async (taskId) => {
+		try {
+			const response = await axiosInstance.post(
+				`/companies/${userData.company.id}/tasks/${taskId}/complete`,
+				{
+					company_id: userData.company.id,
+					employee_id: userData.id,
+				}
+			);
+
+			if (response?.data.success) {
+				toast.success("Task marked as complete!");
+				fetchWeeklyTasks(); // Refresh tasks after marking complete
+			}
+		} catch (error) {
+			console.error("Error marking task as complete:", error);
+			toast.error("Failed to mark task as complete.");
+		}
+	};
+
 	console.log(userData)
+
+	useEffect(() => {
+		fetchEmployeeSchedule();
+		if(userData.role == 'manager') {
+			fetchCompanyWeeklyTasks(); 
+		}
+		else {
+			fetchWeeklyTasks(); 
+		}
+	}, [])
+	
 	return (
 		userData.role == 'manager' ? (
 			<div className="mt-12 max-w-[64rem] mx-auto">
@@ -71,24 +171,33 @@ export function Home() {
 					<h2 className="font-bold text-6xl">{userData ? `${userData.firstname} ${userData.lastname}` : ''}</h2>
 					<h3 className="text-gray-600 text-3xl">@ {userData ? `${userData.company.company_name}` : ''}</h3>
 				</div>
-				<div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-					{statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
-						<StatisticsCard
-							key={title}
-							{...rest}
-							title={title}
-							icon={React.createElement(icon, {
-								className: "w-6 h-6 text-white",
-							})}
-							footer={
-								<Typography className="font-normal text-blue-gray-600">
-									<strong className={footer.color}>{footer.value}</strong>
-									&nbsp;{footer.label}
-								</Typography>
-							}
-						/>
-					))}
+				<div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-3">
+					<StatisticsCard
+						key="This week Tasks" 
+						color="gray"
+						title="This week Tasks"
+						icon={<ListBulletIcon className="w-6 h-6"/>}
+						value={loading ? 
+							<div className="flex justify-end mt-1"><Spinner className="block"/></div>
+							: (tasks ? tasks.length : 0)}
+					/>
+					<StatisticsCard
+						key="Total Users" 
+						color="gray"
+						title="Total Users"
+						icon={<UserGroupIcon className="w-6 h-6"/>}
+						value="4"
+					/>
+					<StatisticsCard
+						key="Payout Last Month" 
+						color="gray"
+						title="Payout Last Month"
+						icon={<UserGroupIcon className="w-6 h-6"/>}
+						value="23,400"
+					/>
+					 
 				</div>
+				 
 				<div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-1">
 					<Card className="overflow-hidden xl:col-span-2 border border-blue-gray-100 shadow-sm">
 						<CardHeader
@@ -99,101 +208,111 @@ export function Home() {
 						>
 							<div>
 								<Typography variant="h6" color="blue-gray" className="mb-1">
-									Tasks
+									Weekly Tasks
 								</Typography>
 								<Typography
 									variant="small"
 									className="flex items-center gap-1 font-normal text-blue-gray-600"
 								>
-									<CheckCircleIcon strokeWidth={3} className="h-4 w-4 text-blue-gray-200" />
-									<strong>30 done</strong> this month
+									{tasks.length > 0
+										? `There are ${tasks.length} tasks added for employees this week`
+										: "No tasks scheduled for this week"}
 								</Typography>
 							</div>
 						</CardHeader>
-						<CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-							<table className="w-full min-w-[640px] table-auto">
+						<CardBody className="overflow-x-auto px-0 pt-0 pb-2">
+							<table id="weekly-tasks-company" className="w-full min-w-[640px] table-auto">
 								<thead>
 									<tr>
-										{["companies", "members", "budget", "completion"].map(
-											(el) => (
-												<th
-													key={el}
-													className="border-b border-blue-gray-50 py-3 px-6 text-left"
+										{["Task Name", "Description", "Assigned User", "Status"].map((el) => (
+											<th
+												key={el}
+												className="border-b border-blue-gray-50 py-3 px-6 text-left"
+											>
+												<Typography
+													variant="small"
+													className="text-[11px] font-medium uppercase text-blue-gray-400"
 												>
-													<Typography
-														variant="small"
-														className="text-[11px] font-medium uppercase text-blue-gray-400"
-													>
-														{el}
-													</Typography>
-												</th>
-											)
-										)}
+													{el}
+												</Typography>
+											</th>
+										))}
 									</tr>
 								</thead>
 								<tbody>
-									{projectsTableData.map(
-										({ img, name, members, budget, completion }, key) => {
-											const className = `py-3 px-5 ${key === projectsTableData.length - 1
-												? ""
-												: "border-b border-blue-gray-50"
-												}`;
-
-											return (
-												<tr key={name}>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<div className="flex items-center gap-4">
-															<Avatar src={img} alt={name} size="sm" />
-															<Typography
-																variant="small"
-																color="blue-gray"
-																className="font-bold"
-															>
-																{name}
-															</Typography>
-														</div>
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														{members.map(({ img, name }, key) => (
-															<Tooltip key={name} content={name}>
+									{loading ? (
+										<tr>
+											<td colSpan={5} className="font-medium col-span-5 py-2 text-center">
+												<div className="flex justify-center gap-4 w-full">
+													<Spinner /> Loading!
+												</div>
+											</td>
+										</tr>
+									) : tasks.length > 0 ? (
+										tasks.map((task, index) => (
+											<tr key={index}>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													<Typography
+														variant="small"
+														className="text-xs font-medium text-blue-gray-600"
+													>
+														{task.name}
+													</Typography>
+												</td>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													<Typography
+														variant="small"
+														className="text-xs font-medium text-blue-gray-600"
+													>
+														{task.description}
+													</Typography>
+												</td>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													<div className="flex items-center gap-4">
+														{task.user.avatar ? 
+															<div className="  flex justify-center items-center gap-2">
 																<Avatar
-																	src={img}
-																	alt={name}
-																	size="xs"
-																	variant="circular"
-																	className={`cursor-pointer border-2 border-white ${key === 0 ? "" : "-ml-2.5"
-																		}`}
+																	src={`${import.meta.env.VITE_API_UPLOADS_URL}/${task.user.avatar}`}
+																	alt={task.user.name}
+																	size="sm"
 																/>
-															</Tooltip>
-														))}
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<Typography
-															variant="small"
-															className="text-xs font-medium text-blue-gray-600"
-														>
-															{budget}
-														</Typography>
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<div className="w-10/12">
-															<Typography
-																variant="small"
-																className="mb-1 block text-xs font-medium text-blue-gray-600"
-															>
-																{completion}%
-															</Typography>
-															<Progress
-																value={completion}
-																variant="gradient"
-																color={completion === 100 ? "green" : "blue"}
-																className="h-1"
-															/>
-														</div>
-													</td>
-												</tr>
-											);
-										}
+																<span className="text-xs">{task.user.firstname} {task.user.lastname}</span>
+															</div>
+														:
+															<div className="  flex justify-center items-center gap-2">
+																<div className='cursor-pointer no-avatar-preview rounded-full w-8 h-8 aspect-square p-2 bg-gray-200 text-gray-700'>
+																	<UserIcon className='aspect-square'/>
+																</div>
+																<span className="text-xs">{task.user.firstname} {task.user.lastname}</span>
+															</div>
+															
+														}
+														
+													</div>
+												</td>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													<Typography
+														variant="small"
+														className={`text-xs font-medium  rounded-full px-2 py-1 text-center max-w-[100px] capitalize ${
+															task.status === "completed"
+																? "text-green-700 bg-green-200"
+																: "text-orange-700 bg-orange-200"
+														}`}
+													>
+														{task.status}
+													</Typography>
+												</td>
+											</tr>
+										))
+									) : (
+										<tr>
+											<td
+												colSpan={5}
+												className="py-4 px-5 text-center text-blue-gray-600"
+											>
+												No tasks scheduled for this week.
+											</td>
+										</tr>
 									)}
 								</tbody>
 							</table>
@@ -240,93 +359,99 @@ export function Home() {
 									variant="small"
 									className="flex items-center gap-1 font-normal text-blue-gray-600"
 								>
+									{schedules[userData.id]?.shifts?.length > 0
+										? `You have ${schedules[userData.id].shifts.length} shifts this week`
+										: "No shifts scheduled for this week"}
 								</Typography>
 							</div>
 						</CardHeader>
-						<CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-							<table className="w-full min-w-[640px] table-auto">
+						<CardBody className="overflow-x-auto px-0 pt-0 pb-2">
+							<table id="weekly-schedule-table" className="w-full min-w-[640px] table-auto">
 								<thead>
 									<tr>
-										{["day", "shift", "start time", "end time"].map(
-											(el) => (
-												<th
-													key={el}
-													className="border-b border-blue-gray-50 py-3 px-6 text-left"
+										{["Day", "Shift Name", "Start Time", "End Time", "Notes"].map((el) => (
+											<th
+												key={el}
+												className="border-b border-blue-gray-50 py-3 px-6 text-left"
+											>
+												<Typography
+													variant="small"
+													className="text-[11px] font-medium uppercase text-blue-gray-400"
 												>
-													<Typography
-														variant="small"
-														className="text-[11px] font-medium uppercase text-blue-gray-400"
-													>
-														{el}
-													</Typography>
-												</th>
-											)
-										)}
+													{el}
+												</Typography>
+											</th>
+										))}
 									</tr>
 								</thead>
 								<tbody>
-									{projectsTableData.map(
-										({ img, name, members, budget, completion }, key) => {
-											const className = `py-3 px-5 ${key === projectsTableData.length - 1
-												? ""
-												: "border-b border-blue-gray-50"
-												}`;
+									{schedules[userData.id]?.shifts?.length > 0 ? (
+										// Sort shifts by date before rendering
+										schedules[userData.id].shifts
+											.sort((a, b) => new Date(a.date) - new Date(b.date))
+											.map((shift, index) => {
+												const day = new Date(shift.date).toLocaleDateString("en-US", {
+													weekday: "long",
+												});
 
-											return (
-												<tr key={name}>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<div className="flex items-center gap-4">
-															<Avatar src={img} alt={name} size="sm" />
+												// Convert start_time and end_time to AM/PM format
+												const startTime = format(new Date(`1970-01-01T${shift.start_time}`), "hh:mm a");
+												const endTime = format(new Date(`1970-01-01T${shift.end_time}`), "hh:mm a");
+
+												return (
+													<tr key={index}>
+														<td className="py-4 px-5 border-b border-blue-gray-50">
 															<Typography
 																variant="small"
-																color="blue-gray"
-																className="font-bold"
+																className="text-xs font-medium text-blue-gray-600"
 															>
-																{name}
+																{day}
 															</Typography>
-														</div>
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														{members.map(({ img, name }, key) => (
-															<Tooltip key={name} content={name}>
-																<Avatar
-																	src={img}
-																	alt={name}
-																	size="xs"
-																	variant="circular"
-																	className={`cursor-pointer border-2 border-white ${key === 0 ? "" : "-ml-2.5"
-																		}`}
-																/>
-															</Tooltip>
-														))}
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<Typography
-															variant="small"
-															className="text-xs font-medium text-blue-gray-600"
-														>
-															{budget}
-														</Typography>
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<div className="w-10/12">
+														</td>
+														<td className="py-4 px-5 border-b border-blue-gray-50">
 															<Typography
 																variant="small"
-																className="mb-1 block text-xs font-medium text-blue-gray-600"
+																className="text-xs font-medium text-blue-gray-600"
 															>
-																{completion}%
+																{shift.name}
 															</Typography>
-															<Progress
-																value={completion}
-																variant="gradient"
-																color={completion === 100 ? "green" : "blue"}
-																className="h-1"
-															/>
-														</div>
-													</td>
-												</tr>
-											);
-										}
+														</td>
+														<td className="py-4 px-5 border-b border-blue-gray-50">
+															<Typography
+																variant="small"
+																className="text-xs font-medium text-blue-gray-600"
+															>
+																{startTime}
+															</Typography>
+														</td>
+														<td className="py-4 px-5 border-b border-blue-gray-50">
+															<Typography
+																variant="small"
+																className="text-xs font-medium text-blue-gray-600"
+															>
+																{endTime}
+															</Typography>
+														</td>
+														<td className="py-4 px-5 border-b border-blue-gray-50">
+															<Typography
+																variant="small"
+																className="text-xs font-medium text-blue-gray-600"
+															>
+																{schedules[userData.id]?.notes || "No notes available"}
+															</Typography>
+														</td>
+													</tr>
+												);
+											})
+									) : (
+										<tr>
+											<td
+												colSpan={5}
+												className="py-4 px-5 text-center text-blue-gray-600"
+											>
+												No shifts scheduled for this week.
+											</td>
+										</tr>
 									)}
 								</tbody>
 							</table>
@@ -343,101 +468,101 @@ export function Home() {
 						>
 							<div>
 								<Typography variant="h6" color="blue-gray" className="mb-1">
-									Tasks
+									Weekly Tasks
 								</Typography>
 								<Typography
 									variant="small"
 									className="flex items-center gap-1 font-normal text-blue-gray-600"
 								>
-									<CheckCircleIcon strokeWidth={3} className="h-4 w-4 text-blue-gray-200" />
-									<strong>30 done</strong> this month
+									{tasks.length > 0
+										? `You have ${tasks.length} tasks this week`
+										: "No tasks scheduled for this week"}
 								</Typography>
 							</div>
 						</CardHeader>
-						<CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-							<table className="w-full min-w-[640px] table-auto">
+						<CardBody className="overflow-x-auto px-0 pt-0 pb-2">
+							<table id="weekly-tasks-table" className="w-full min-w-[640px] table-auto">
 								<thead>
 									<tr>
-										{["companies", "members", "budget", "completion"].map(
-											(el) => (
-												<th
-													key={el}
-													className="border-b border-blue-gray-50 py-3 px-6 text-left"
+										{["Task Name", "Description", "Status", "Actions"].map((el) => (
+											<th
+												key={el}
+												className="border-b border-blue-gray-50 py-3 px-6 text-left"
+											>
+												<Typography
+													variant="small"
+													className="text-[11px] font-medium uppercase text-blue-gray-400"
 												>
-													<Typography
-														variant="small"
-														className="text-[11px] font-medium uppercase text-blue-gray-400"
-													>
-														{el}
-													</Typography>
-												</th>
-											)
-										)}
+													{el}
+												</Typography>
+											</th>
+										))}
 									</tr>
 								</thead>
 								<tbody>
-									{projectsTableData.map(
-										({ img, name, members, budget, completion }, key) => {
-											const className = `py-3 px-5 ${key === projectsTableData.length - 1
-												? ""
-												: "border-b border-blue-gray-50"
-												}`;
-
-											return (
-												<tr key={name}>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<div className="flex items-center gap-4">
-															<Avatar src={img} alt={name} size="sm" />
-															<Typography
-																variant="small"
-																color="blue-gray"
-																className="font-bold"
-															>
-																{name}
-															</Typography>
-														</div>
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														{members.map(({ img, name }, key) => (
-															<Tooltip key={name} content={name}>
-																<Avatar
-																	src={img}
-																	alt={name}
-																	size="xs"
-																	variant="circular"
-																	className={`cursor-pointer border-2 border-white ${key === 0 ? "" : "-ml-2.5"
-																		}`}
-																/>
-															</Tooltip>
-														))}
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<Typography
-															variant="small"
-															className="text-xs font-medium text-blue-gray-600"
+									{loading ? (
+										<tr>
+											<td colSpan={4} className="font-medium col-span-4 py-2 text-center">
+												<div className="flex justify-center gap-4 w-full">
+													<Spinner /> Loading!
+												</div>
+											</td>
+										</tr>
+									) : tasks.length > 0 ? (
+										tasks.map((task, index) => (
+											<tr key={index}>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													<Typography
+														variant="small"
+														className="text-xs font-medium text-blue-gray-600"
+													>
+														{task.name}
+													</Typography>
+												</td>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													<Typography
+														variant="small"
+														className="text-xs font-medium text-blue-gray-600"
+													>
+														{task.description}
+													</Typography>
+												</td>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													<Typography
+														variant="small"
+														className={`text-xs font-medium ${
+															task.status === "completed"
+																? "text-green-600"
+																: "text-blue-gray-600"
+														}`}
+													>
+														{task.status}
+													</Typography>
+												</td>
+												<td className="py-4 px-5 border-b border-blue-gray-50">
+													{task.status === "completed" ? (
+														<CheckBadgeIcon className="h-6 w-6 text-green-600" />
+													) : (
+														<IconButton
+															variant="text"
+															color="green"
+															onClick={() => markTaskComplete(task.id)}
 														>
-															{budget}
-														</Typography>
-													</td>
-													<td className="py-4 px-5 border-b border-blue-gray-50">
-														<div className="w-10/12">
-															<Typography
-																variant="small"
-																className="mb-1 block text-xs font-medium text-blue-gray-600"
-															>
-																{completion}%
-															</Typography>
-															<Progress
-																value={completion}
-																variant="gradient"
-																color={completion === 100 ? "green" : "blue"}
-																className="h-1"
-															/>
-														</div>
-													</td>
-												</tr>
-											);
-										}
+															Mark Complete
+														</IconButton>
+													)}
+												</td>
+											</tr>
+										))
+									) : (
+										<tr>
+											<td
+												colSpan={4}
+												className="py-4 px-5 text-center text-blue-gray-600"
+											>
+												No tasks scheduled for this week.
+											</td>
+										</tr>
 									)}
 								</tbody>
 							</table>
