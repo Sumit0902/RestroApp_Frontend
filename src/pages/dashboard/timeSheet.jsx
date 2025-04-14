@@ -176,26 +176,29 @@ function TimeSheet() {
   };
 
   const calculateHours = (checkIn, checkOut) => { 
-    if (!checkIn) return 0; // Return 0 if check-in is missing
+    if (!checkIn) return "0H 0m"; // Return "0H 0M" if check-in is missing
 
-    let checkInTime = new Date(`1970-01-01T${checkIn}:00`);
+    let checkInTime = new Date(`1970-01-01T${checkIn}`);
     let checkOutTime;
 
-    if (!checkOut) {
-        // If check-out is null, assume 8 hours
-        return 8;
+    if (!checkOut) { 
+        return "8H 0M"; // Assume 8 hours with 0 minutes if check-out is missing
     } else {
-        checkOutTime = new Date(`1970-01-01T${checkOut}:00`);
+        checkOutTime = new Date(`1970-01-01T${checkOut}`);
     }
 
-    // Handle cases where check-out is on the next day
     if (checkOutTime < checkInTime) {
         checkOutTime.setDate(checkOutTime.getDate() + 1);
     }
 
-    let diffHours = (checkOutTime - checkInTime) / (1000 * 60 * 60);
-    return diffHours;
+    let diffMinutes = Math.round((checkOutTime - checkInTime) / (1000 * 60));
+    let hours = Math.floor(diffMinutes / 60);
+    let minutes = diffMinutes % 60;
+
+    return `${hours}H ${minutes}m`;
 }
+
+
 
   return (
     <div className='w-full p-2 relative h-full max-h-[calc(100vh_-_2rem)]'>
@@ -242,47 +245,56 @@ function TimeSheet() {
                           </tr>
                         </thead>
                         <tbody>
-                          {attendanceData.map((entry) => {
-                            let totalHours = 0; 
-                            return (
-                              <tr key={entry.user.id}> 
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                                  {entry.user.firstname} {entry.user.lastname}
-                                </td> 
-                                {weeks[selectedWeek].map((day) => {
-                                  const date = format(day, 'yyyy-MM-dd');  
-                                  const record = entry.attendance[date] || { check_in: null, check_out: null }; 
-                                  const hours = calculateHours(record.check_in, record.check_out);  
-                                  totalHours += parseFloat(hours);  
-                                  console.log('ott', hours, record)
-                                  return (
-                                    <td
-                                      key={day}
-                                      style={{
-                                        border: '1px solid #ddd',
-                                        padding: '8px',
-                                        backgroundColor: hours > 0 ? '#d4edda' : '', 
-                                      }}
-                                    >
-                                      {record.check_in && record.check_out ? (
-                                        <>
-                                          <div>{format(new Date(`${date}T${record.check_in}`), 'hh:mm a')}</div>
-                                          <div>{format(new Date(`${date}T${record.check_out}`), 'hh:mm a')}</div>
-                                        </>
-                                      ) : (
-                                        '-'  
-                                      )}
-                                    </td>
-                                  );
-                                })}
-                                {/* Total Hours */}
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                                  {totalHours}h
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
+  {attendanceData.map((entry) => {
+      let totalHours = 0;  
+      let totalMinutes = 0;
+
+      return (
+        <tr key={entry.user.id}> 
+          <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+            {entry.user.firstname} {entry.user.lastname}
+          </td> 
+          {weeks[selectedWeek].map((day) => {
+            const date = format(day, 'yyyy-MM-dd');  
+            const record = entry.attendance[date] || { check_in: null, check_out: null }; 
+            const hoursString = calculateHours(record.check_in, record.check_out);  
+            const [hours, minutes] = hoursString.match(/\d+/g).map(Number); 
+
+            // Accumulate total weekly hours & minutes
+            totalHours += hours;
+            totalMinutes += minutes;
+
+            // Convert excess minutes into hours immediately
+            totalHours += Math.floor(totalMinutes / 60);
+            totalMinutes %= 60;
+
+            return (
+              <td
+                key={day}
+                style={{
+                  border: '1px solid #ddd',
+                  padding: '8px', 
+                  maxWidth: '80px',
+                }}
+              >
+                {record.check_in ? (
+                  <>
+                    <div>Check in: <span className='font-bold'>{format(new Date(`${date}T${record.check_in}`), 'hh:mm a')}</span></div>
+                    <div>Check out: <span className='font-bold'>{record.check_out ? format(new Date(`${date}T${record.check_out}`), 'hh:mm a') : 'N/A'}</span></div>
+                  </>
+                ) : (
+                  '-'  
+                )}
+              </td>
+            );
+          })} 
+          <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+            {totalHours}H {totalMinutes}M
+          </td> {/* ✅ Display the full accumulated weekly total here */}
+        </tr>
+      );
+  })}
+</tbody>
                       </table>
                     </Card>
                   ) : (

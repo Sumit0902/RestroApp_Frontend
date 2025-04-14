@@ -134,7 +134,7 @@ export function DashboardNavbar() {
         }
     };
 
-    console.log(notifications);
+    // console.log(notifications);
 
 
     function formatDate(inputDate) {

@@ -242,17 +242,26 @@ const MyProfile = () => {
 							Avatar
 						</Typography>
 						<div className="flex items-center gap-4">
-							{avatarPreview ? (
+							{userData?.avatar  ?
 								<img
 									src={`${import.meta.env.VITE_API_UPLOADS_URL}/${avatarPreview}`}
 									alt="Avatar Preview"
 									className="w-20 h-20 rounded-full object-cover border"
 								/>
+							:
+							(
+								avatarPreview ? (
+									<img
+										src={`${avatarPreview}`}
+										alt="Avatar Preview"
+										className="w-20 h-20 rounded-full object-cover border"
+									/>
+								)
+									:
+									<div className='no-avatar-preview rounded-full w-20 h-20 aspect-square p-2 bg-gray-200'>
+										<UserIcon className='aspect-square' />
+									</div>
 							)
-								:
-								<div className='no-avatar-preview rounded-full w-20 h-20 aspect-square p-2 bg-gray-200'>
-									<UserIcon className='aspect-square' />
-								</div>
 							}
 							<input
 								type="file"

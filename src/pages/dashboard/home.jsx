@@ -36,6 +36,7 @@ export function Home() {
 	const [schedules, setSchedules] = useState({});
 	const [weekOffset, setWeekOffset] = useState(0);
 	const [tasks, setTasks] = useState([]); 
+	const [totalEmployees, setTotalEmployees] = useState(0); 
 
 	if (!userData || null === userData) {
 		dispatch(logout);
@@ -124,7 +125,21 @@ export function Home() {
 	};
 
 	const fetchTotalEmployees = async () => {
-		
+		try {
+			const response = await axiosInstance.post(
+				`/companies/${userData.company.id}/employees`,
+			);
+
+			if (response?.data.success) {
+				setTotalEmployees(response.data.data.length);
+				// toast.success("Task marked as complete!");
+				// fetchWeeklyTasks(); // Refresh tasks after marking complete
+
+			}
+		} catch (error) {
+			console.error("Error marking task as complete:", error);
+			toast.error("Failed to mark task as complete.");
+		}
 	}
 
 	const fetchLastMonthPayout = async () => { 
@@ -156,7 +171,8 @@ export function Home() {
 	useEffect(() => {
 		fetchEmployeeSchedule();
 		if(userData.role == 'manager') {
-			fetchCompanyWeeklyTasks(); 
+			fetchCompanyWeeklyTasks();
+			fetchTotalEmployees();
 		}
 		else {
 			fetchWeeklyTasks(); 
@@ -186,14 +202,18 @@ export function Home() {
 						color="gray"
 						title="Total Users"
 						icon={<UserGroupIcon className="w-6 h-6"/>}
-						value="4"
+						value={loading ? 
+							<div className="flex justify-end mt-1"><Spinner className="block"/></div>
+							: (tasks ? tasks.length : 0)}
 					/>
 					<StatisticsCard
 						key="Payout Last Month" 
 						color="gray"
 						title="Payout Last Month"
 						icon={<UserGroupIcon className="w-6 h-6"/>}
-						value="23,400"
+						value={loading ? 
+							<div className="flex justify-end mt-1"><Spinner className="block"/></div>
+							: (tasks ? tasks.length : 0)}
 					/>
 					 
 				</div>
@@ -293,7 +313,7 @@ export function Home() {
 												<td className="py-4 px-5 border-b border-blue-gray-50">
 													<Typography
 														variant="small"
-														className={`text-xs font-medium  rounded-full px-2 py-1 text-center max-w-[100px] capitalize ${
+														className={`text-xs font-medium capitalize rounded-full px-2 py-1 text-center max-w-[100px] capitalize ${
 															task.status === "completed"
 																? "text-green-700 bg-green-200"
 																: "text-orange-700 bg-orange-200"
@@ -327,22 +347,7 @@ export function Home() {
 					<h2 className="font-bold text-6xl">{userData ? `${userData.firstname} ${userData.lastname}` : ''}</h2>
 					<h3 className="text-gray-600 text-3xl">@ {userData ? `${userData.company.company_name}` : ''}</h3>
 				</div>
-				{/* <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-					<StatisticsCard
-						key={title}
-						{...rest}
-						title={title}
-						icon={React.createElement(icon, {
-							className: "w-6 h-6 text-white",
-						})}
-						footer={
-							<Typography className="font-normal text-blue-gray-600">
-								<strong className={footer.color}>{footer.value}</strong>
-								&nbsp;{footer.label}
-							</Typography>
-						}
-					/>
-				</div> */}
+			 
 				<div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-1">
 					<Card className="overflow-hidden xl:col-span-2 border border-blue-gray-100 shadow-sm">
 						<CardHeader
@@ -385,8 +390,7 @@ export function Home() {
 									</tr>
 								</thead>
 								<tbody>
-									{schedules[userData.id]?.shifts?.length > 0 ? (
-										// Sort shifts by date before rendering
+									{schedules[userData.id]?.shifts?.length > 0 ? ( 
 										schedules[userData.id].shifts
 											.sort((a, b) => new Date(a.date) - new Date(b.date))
 											.map((shift, index) => {
@@ -511,7 +515,7 @@ export function Home() {
 									) : tasks.length > 0 ? (
 										tasks.map((task, index) => (
 											<tr key={index}>
-												<td className="py-4 px-5 border-b border-blue-gray-50">
+												<td className="w-[10%] py-4 px-5 border-b border-blue-gray-50">
 													<Typography
 														variant="small"
 														className="text-xs font-medium text-blue-gray-600"
@@ -519,7 +523,7 @@ export function Home() {
 														{task.name}
 													</Typography>
 												</td>
-												<td className="py-4 px-5 border-b border-blue-gray-50">
+												<td className="w-[30%] py-4 px-5 border-b border-blue-gray-50">
 													<Typography
 														variant="small"
 														className="text-xs font-medium text-blue-gray-600"
@@ -527,29 +531,30 @@ export function Home() {
 														{task.description}
 													</Typography>
 												</td>
-												<td className="py-4 px-5 border-b border-blue-gray-50">
+												<td className="w-[20%] py-4 px-5 border-b border-blue-gray-50">
 													<Typography
 														variant="small"
-														className={`text-xs font-medium ${
+														className={`text-xs font-medium   rounded-full px-2 py-1 text-center max-w-[100px] capitalize ${
 															task.status === "completed"
-																? "text-green-600"
-																: "text-blue-gray-600"
-														}`}
+																? "text-green-600 bg-green-200"
+																: "text-orange-600 bg-orange-200"
+														} `}
 													>
 														{task.status}
 													</Typography>
 												</td>
-												<td className="py-4 px-5 border-b border-blue-gray-50">
+												<td className="w-[10%] py-4 px-5 border-b border-blue-gray-50">
 													{task.status === "completed" ? (
 														<CheckBadgeIcon className="h-6 w-6 text-green-600" />
 													) : (
-														<IconButton
-															variant="text"
-															color="green"
+														<Button
+															variant="gradient"
+															color="gray"
 															onClick={() => markTaskComplete(task.id)}
+															className="text-xs"
 														>
 															Mark Complete
-														</IconButton>
+														</Button>
 													)}
 												</td>
 											</tr>

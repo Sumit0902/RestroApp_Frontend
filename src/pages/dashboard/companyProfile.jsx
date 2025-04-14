@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { logout } from '@/store/features/auth/AuthSlice.js';
 import axios from 'axios';
 import useAuthAxios from '@/lib/authAxios';
-import { Button, Card, Input, Textarea, Typography } from '@material-tailwind/react';
+import { Button, Card, Input, Textarea, Typography, Select, Option } from '@material-tailwind/react';
 import { handleAuthError } from '@/lib/utils';
 
 const CompanyProfile = () => {
@@ -29,11 +29,16 @@ const CompanyProfile = () => {
 		company_zip: '',
 		phone: '',
 		email: '',
-		logo: null, // The actual file for upload
-		logoPreview: null, // Temporary preview of the uploaded image
-		originalLogo: '', // Original logo URL from the database
+		ot_type: '',
+		ot_rate: '',
+		logo: null,
+		logoPreview: null,
+		originalLogo: '', 
 		workingDays: []
 	});
+	// const [rateType, setRateType] = useState("fixed"); // State for Rate Type
+	// const [overtimeRate, setOvertimeRate] = useState(""); // State for Overtime Rate
+
 	const params = useParams();
 	companyId = params.companyId;
 
@@ -61,6 +66,8 @@ const CompanyProfile = () => {
 				logoPreview: null, // Temporary preview of the uploaded image
 				originalLogo: cData.logo,
 				workingDays: cData.workingDays?.length > 0 ? (cData.workingDays).split(',').map(Number) : [],
+				ot_type: cData.ot_type ?? 'fixed',
+				ot_rate: cData.ot_rate ?? 0.00,
 			});
 
 			console.log('companyData', companyData)
@@ -76,7 +83,13 @@ const CompanyProfile = () => {
 		fetchCompanyProfile();
 	}, []);
 
-
+	const selectChange = (e) => {
+		console.log('select change', e)
+		setCompanyData((prevData) => ({
+			...prevData,
+			ot_type: e,
+		}));
+	}
 	const handleInputChange = (e) => {
 		const { name, value, files } = e.target;
 
@@ -129,6 +142,8 @@ const CompanyProfile = () => {
 		}
 	};
 
+	 
+
 	const handleSubmit = async (e) => {
 		const updateToast = toast.loading("Processing your request...", { autoClose: 5000 })
 		e.preventDefault();
@@ -145,6 +160,8 @@ const CompanyProfile = () => {
 			email: companyData.email,
 			logo: companyData.logo,
 			workingDays: companyData.workingDays,
+			ot_type: companyData.ot_type,
+			ot_rate: companyData.ot_rate,
 		}
 
 		try {
@@ -340,6 +357,45 @@ const CompanyProfile = () => {
 									))}
 								</div>
 							</div> 
+						</div>
+						<div>
+							<Typography className="block text-left mb-2" htmlFor="overtime_rate">
+								Overtime Rate
+							</Typography>
+							<div className="flex items-center space-x-4">
+								{/* Rate Type Select */}
+								<div className="flex-1">
+									<Select
+										id="rate_type"
+										name="ot_type"
+										value={companyData.ot_type}
+										onChange={selectChange}
+										label="Rate Type"
+									>
+										<Option value="fixed">Fixed</Option>
+										<Option value="percentage">Percentage</Option>
+									</Select>
+								</div>
+
+								{/* Overtime Rate Input */}
+								<div className="flex-1">
+									<Input
+										id="overtime_rate"
+										name="ot_rate"
+										type="number"
+										step="0.01"
+										value={companyData.ot_rate}
+										onChange={handleInputChange}
+										label={
+											companyData?.ot_type === "percentage"
+												? "Overtime Rate (%)"
+												: "Overtime Rate (€)"
+										}
+										min={0.00}
+										max={companyData?.ot_type === "percentage" ? 100 : 999999}
+									/>
+								</div>
+							</div>
 						</div>
 						<Button type='submit'>Save Changes</Button>
 					</form>
