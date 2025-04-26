@@ -35,6 +35,17 @@ const Employees = () => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [formSubmitting, setFormSubmitting] = useState(false);
     const [editEmployeeId, setEditEmployeeId] = useState(null);
+    const emptyState = {
+        firstname: "",
+        lastname: "",
+        email: "",
+        password: "",
+        phone: "",
+        role: "employee",
+        company_role: "",
+        wage: "hourly",
+        wage_rate: "",
+    };
     const [employeeForm, setEmployeeForm] = useState({
         firstname: "",
         lastname: "",
@@ -46,7 +57,7 @@ const Employees = () => {
         wage: "hourly",
         wage_rate: "",
     });
-    const [formError, setFormError] = useState(""); // State to store form errors
+    const [formError, setFormError] = useState("");
 
     const companyId = userData?.company?.id;
 
@@ -102,6 +113,7 @@ const Employees = () => {
             );
             toast.success("Employee updated successfully!");
             setIsEditOpen(false);
+            setEmployeeForm(emptyState); // Reset form state
             fetchEmployees();
         } catch (error) {
             const errorMessage = error.response?.data?.message || "Failed to update employee.";
@@ -159,7 +171,7 @@ const Employees = () => {
                     </div>
                 </div>
             </CardHeader>
-            <CardBody className="overflow-scroll px-0">
+            <CardBody className="overflow-auto px-0">
                 <table className="mt-4 w-full min-w-max table-auto text-left">
                     <thead>
                         <tr>
@@ -179,9 +191,11 @@ const Employees = () => {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr>
-                                <td colSpan={4} className="text-center p-4">
-                                    <Spinner className="h-8 w-8" />
+                           <tr>
+                                <td colSpan={4} className="font-medium col-span-4 py-4 text-center">
+                                    <div className="flex justify-center gap-4 w-full">
+                                        <Spinner /> Loading!
+                                    </div>
                                 </td>
                             </tr>
                         ) : employees.length > 0 ? (
@@ -212,7 +226,15 @@ const Employees = () => {
             </CardBody>
 
             {/* Add Employee Dialog */}
-            <Dialog open={isAddOpen} handler={setIsAddOpen}>
+            <Dialog
+                open={isAddOpen}
+                handler={(isOpen) => {
+                    setIsAddOpen(isOpen);
+                    if (!isOpen) {
+                        setEmployeeForm(emptyState); 
+                    }
+                }}
+            >
                 <DialogHeader>Add Employee</DialogHeader>
                 <DialogBody>
                     {formError && (
@@ -263,6 +285,7 @@ const Employees = () => {
                             name="wage_rate"
                             type="number"
                             step="0.01"
+                            min={10.50}
                             value={employeeForm.wage_rate}
                             onChange={handleInputChange}
                         />
@@ -271,7 +294,7 @@ const Employees = () => {
                             name="wage"
                             value={employeeForm.wage}
                             onChange={(value) =>
-                                setEmployeeForm((prev) => ({ ...prev, wage_rate: value }))
+                                setEmployeeForm((prev) => ({ ...prev, wage: value }))
                             }
                         >
                             <Option value="hourly">Hourly</Option>
@@ -290,7 +313,10 @@ const Employees = () => {
                     </Button>
                     <Button
                         color="red"
-                        onClick={() => setIsAddOpen(false)}
+                        onClick={() => {
+                            setIsAddOpen(false);
+                            setEmployeeForm(emptyState); 
+                        }}
                     >
                         Cancel
                     </Button>
@@ -298,7 +324,15 @@ const Employees = () => {
             </Dialog>
 
             {/* Edit Employee Dialog */}
-            <Dialog open={isEditOpen} handler={setIsEditOpen}>
+            <Dialog
+                open={isEditOpen}
+                handler={(isOpen) => {
+                    setIsEditOpen(isOpen);
+                    if (!isOpen) {
+                        setEmployeeForm(emptyState); 
+                    }
+                }}
+            >
                 <DialogHeader>Edit Employee</DialogHeader>
                 <DialogBody>
                     {formError && (
@@ -350,7 +384,7 @@ const Employees = () => {
                             name="wage"
                             value={employeeForm.wage}
                             onChange={(value) =>
-                                setEmployeeForm((prev) => ({ ...prev, wage_rate: value }))
+                                setEmployeeForm((prev) => ({ ...prev, wage: value }))
                             }
                         >
                             <Option value="hourly">Hourly</Option>
@@ -369,7 +403,10 @@ const Employees = () => {
                     </Button>
                     <Button
                         color="red"
-                        onClick={() => setIsEditOpen(false)}
+                        onClick={() => {
+                            setIsEditOpen(false);
+                            setEmployeeForm(emptyState); 
+                        }}
                     >
                         Cancel
                     </Button>

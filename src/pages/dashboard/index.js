@@ -10,3 +10,4 @@ export * from "@/pages/dashboard/timeSheet";
 export * from "@/pages/dashboard/profile";
 export * from "@/pages/dashboard/payroll";
 export * from "@/pages/dashboard/singleEmployee";
+export * from "@/pages/dashboard/inbox";

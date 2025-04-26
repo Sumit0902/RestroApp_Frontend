@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '@/store/features/auth/AuthSlice.js';
 import { Pencil } from 'lucide-react';
+import { persistor } from '@/store/store.js';
 
 export default function Schedule() {
     const userData = useSelector(state => state.auth.user);
@@ -82,7 +83,7 @@ export default function Schedule() {
             let errorStatus = error.response?.status;
             if (errorStatus && (errorStatus == 403 || errorStatus == 401) ) {
                 toast.error('Your session has expired. please login again');
-                dispatch(logout);
+                 persistor.purge();
                 setTimeout(() => {
                     navigate('/');
                 }, 3000);

@@ -7,11 +7,11 @@ import {
 } from "@/widgets/layout";
 import routes, { managerNavRoutes, employeeNavRoutes } from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
-import { Profile } from "@/pages/dashboard";
+import { Inbox, Profile } from "@/pages/dashboard";
 import SingleEmployee from "@/pages/dashboard/singleEmployee";
 import { useSelector } from "react-redux";
 import NotFound from "@/pages/404";
-import MyProfile from "@/pages/dashboard/employee/myprofile";
+import MyProfile from "@/pages/dashboard/employee/myprofile"; 
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -56,6 +56,7 @@ export function Dashboard() {
               <Route exact path='/employee/:id' element={<SingleEmployee/>} />
               </>
           } 
+          <Route exact path='/inbox' element={<Inbox/>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <div className="text-blue-gray-600">

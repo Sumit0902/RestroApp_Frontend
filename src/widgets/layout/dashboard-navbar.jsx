@@ -20,6 +20,7 @@ import {
     CreditCardIcon,
     Bars3Icon,
     UserIcon,
+    EnvelopeIcon,
 } from "@heroicons/react/24/solid";
 import {
     useMaterialTailwindController,
@@ -31,23 +32,24 @@ import { persistor } from "@/store/store";
 import { useEffect, useRef, useState } from "react";
 import useAuthAxios from "@/lib/authAxios";
 import { differenceInDays, format, formatDistanceToNow } from "date-fns";
+import { logout } from "@/store/features/auth/AuthSlice"; 
 
 export function DashboardNavbar() {
     const [controller, dispatch] = useMaterialTailwindController();
     const { fixedNavbar, openSidenav } = controller;
     const { pathname } = useLocation();
     const [layout, page] = pathname.split("/").filter((el) => el !== "");
-    const navigate = useNavigate();
-    const redxdispatch = useDispatch();
-
-    const signOutHandler = () => {
-
-    }
+    const navigate = useNavigate(); 
+ 
 
     const handleLink = (handle) => { 
         switch (handle) {
             case 'profile':
                 navigate('/dashboard/profile')
+                break;
+            case 'inbox':
+                console.log('dfdsf')
+                navigate('/dashboard/inbox')
                 break;
 
             default:
@@ -68,12 +70,15 @@ export function DashboardNavbar() {
     const [unreadNotif, setunreadNotif] = useState(false);
     const fetching = useRef(false);
     const axiosInstance = useAuthAxios();
+     // ======================== unread messages
 
+     const [newMessages, setNewMessages] = useState([]);
+     const messageFetching = useRef(false);
     const userData = useSelector((state) => state.auth.user);
 
     // const dispatch = useDispatch();
     if(!userData || null === userData) {
-        redxdispatch(logout);
+        persistor.purge();
         setTimeout(() => {
             navigate('/');
         }, 3000);
@@ -81,6 +86,36 @@ export function DashboardNavbar() {
 
     const companyId = userData.company.id;
     const employeeId = userData.id;
+
+     
+    const fetchUnreadMessages = async () => {
+        if (!messageFetching.current) {
+            messageFetching.current = true;
+
+            try {
+                const response = await axiosInstance.get(`/messages/${employeeId}/new`);
+                if (response?.data?.success) {
+                    const unreadMessages = response.data.data;
+
+                    // Add unread messages to the new message list
+                    setNewMessages(unreadMessages?.length > 0 ? unreadMessages : []);
+
+                    console.log('mews,s', unreadMessages, response.data )
+                }
+            } catch (error) {
+                console.error("Error fetching unread messages:", error);
+                if (error.status === 401) {
+                    console.log("Logging out due to unauthorized access.");
+                    persistor.purge();
+                    setTimeout(() => {
+                        navigate("/");
+                    }, 3000);
+                }
+            } finally {
+                messageFetching.current = false;
+            }
+        }
+    };
     useEffect(() => {
         const fetchNotifications = async () => {
             if (!fetching.current) {
@@ -94,17 +129,32 @@ export function DashboardNavbar() {
                     }
                     // console.log('notif resp', response)
                 } catch (error) {
-                    console.error("Error fetching notifications:", error);
+                    console.error("Error fetching notifications:", error, error.status);
+                    if(error.status == 401) {
+                            console.log('login out');
+                            persistor.purge();
+                            // redxdispatch(logout());
+                            setTimeout(() => {
+                                navigate('/');
+                            }, 3000);
+                    }
+
                 } finally {
                     fetching.current = false;
                 }
             }
         };
 
+       
+
+
         fetchNotifications();
+        fetchUnreadMessages();
         const interval = setInterval(() => {
             if (!fetching.current) {
                 fetchNotifications();
+                fetchUnreadMessages();
+                console.log('newMessages', newMessages, newMessages.length);
             }
         }, 8000);
 
@@ -134,8 +184,7 @@ export function DashboardNavbar() {
         }
     };
 
-    // console.log(notifications);
-
+   
 
     function formatDate(inputDate) {
         const date = new Date(inputDate);
@@ -205,14 +254,16 @@ export function DashboardNavbar() {
                         <MenuHandler>
                             <IconButton variant="text" color="blue-gray" className="relative flex flex-col justify-center items-start">
                                 <BellIcon className="absolute  -top-2.5 -left-2.5 h-5 w-5 text-blue-gray-500 " />
-                                {notifications?.length > 0 && <BellIcon className="absolute  -top-2.5 -left-2.5 h-5 w-5 text-red-500 animate-ping" />}
+                                {notifications?.some((notif) => !notif.is_read) && (
+                                    <div className="absolute -top-[0.75rem] -left-3 bg-red-500 w-2 h-2 rounded-full"></div>
+                                )}
                             </IconButton>
                         </MenuHandler>
-                        <MenuList className="w-max border-0">
+                        <MenuList className="w-max border-0 max-h-96">
                             {notifications?.length > 0 ?
                                 notifications.map((notif, k) => { 
                                     return (
-                                        <MenuItem key={k} className={`flex items-center gap-3 min-w-44 ${notif?.is_read ? '' : 'bg-blue-gray-100/50 font-bold'}`}>
+                                        <MenuItem key={k} onClick={() => markAsRead(notif.id) } className={`flex items-center my-1 gap-3 min-w-44 ${notif?.is_read ? '' : 'bg-blue-gray-100/50 font-bold'}`}>
                                             <div>
                                                 <Typography
                                                     variant="small"
@@ -242,6 +293,24 @@ export function DashboardNavbar() {
                             }
                         </MenuList>
                     </Menu>
+
+                    <IconButton variant="text" color="blue-gray" className="relative flex flex-col justify-center items-start" onClick={() => handleLink('inbox')}>
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 14 14"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    clipRule="evenodd"
+                                    d="M2 0C1.46957 0 0.960859 0.210714 0.585786 0.585786C0.105357 0.960859 0 1.46957 0 2V12C0 12.5304 0.210714 13.0391 0.585786 13.4142C0.960859 13.7893 1.46957 14 2 14H12C12.5304 14 13.0391 13.7893 13.4142 13.4142C13.7893 13.0391 14 12.5304 14 12V2C14 1.46957 13.7893 0.960859 13.4142 0.585786C13.0391 0.210714 12.5304 0 12 0H2ZM2 2H12V9H10L9 11H5L4 9H2V2Z"
+                                    fill="#90A4AE"
+                                />
+                            </svg>
+                            {newMessages && newMessages.length > 0  && <div className="absolute -top-1 -left-2 bg-red-500 w-2 h-2 rounded-full"></div>}
+                            </IconButton>
 
                     <Menu id="user-menu" className="relative mr-2">
                         <MenuHandler>
@@ -279,45 +348,6 @@ export function DashboardNavbar() {
                                     My Profile
                                 </Typography>
                             </MenuItem>
-                            {/* <MenuItem className="flex items-center gap-2">
-                                <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 14 14"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        clipRule="evenodd"
-                                        d="M2 0C1.46957 0 0.960859 0.210714 0.585786 0.585786C0.210714 0.960859 0 1.46957 0 2V12C0 12.5304 0.210714 13.0391 0.585786 13.4142C0.960859 13.7893 1.46957 14 2 14H12C12.5304 14 13.0391 13.7893 13.4142 13.4142C13.7893 13.0391 14 12.5304 14 12V2C14 1.46957 13.7893 0.960859 13.4142 0.585786C13.0391 0.210714 12.5304 0 12 0H2ZM2 2H12V9H10L9 11H5L4 9H2V2Z"
-                                        fill="#90A4AE"
-                                    />
-                                </svg>
-
-                                <Typography variant="small" className="font-medium">
-                                    Inbox
-                                </Typography>
-                            </MenuItem> */}
-                            {/* <MenuItem className="flex items-center gap-2">
-                                <svg
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 16 16"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        clipRule="evenodd"
-                                        d="M16 8C16 10.1217 15.1571 12.1566 13.6569 13.6569C12.1566 15.1571 10.1217 16 8 16C5.87827 16 3.84344 15.1571 2.34315 13.6569C0.842855 12.1566 0 10.1217 0 8C0 5.87827 0.842855 3.84344 2.34315 2.34315C3.84344 0.842855 5.87827 0 8 0C10.1217 0 12.1566 0.842855 13.6569 2.34315C15.1571 3.84344 16 5.87827 16 8ZM14 8C14 8.993 13.759 9.929 13.332 10.754L11.808 9.229C12.0362 8.52269 12.0632 7.76679 11.886 7.046L13.448 5.484C13.802 6.249 14 7.1 14 8ZM8.835 11.913L10.415 13.493C9.654 13.8281 8.83149 14.0007 8 14C7.13118 14.0011 6.27257 13.8127 5.484 13.448L7.046 11.886C7.63267 12.0298 8.24426 12.039 8.835 11.913ZM4.158 9.117C3.96121 8.4394 3.94707 7.72182 4.117 7.037L4.037 7.117L2.507 5.584C2.1718 6.34531 1.99913 7.16817 2 8C2 8.954 2.223 9.856 2.619 10.657L4.159 9.117H4.158ZM5.246 2.667C6.09722 2.22702 7.04179 1.99825 8 2C8.954 2 9.856 2.223 10.657 2.619L9.117 4.159C8.34926 3.93538 7.53214 3.94687 6.771 4.192L5.246 2.668V2.667ZM10 8C10 8.53043 9.78929 9.03914 9.41421 9.41421C9.03914 9.78929 8.53043 10 8 10C7.46957 10 6.96086 9.78929 6.58579 9.41421C6.21071 9.03914 6 8.53043 6 8C6 7.46957 6.21071 6.96086 6.58579 6.58579C6.96086 6.21071 7.46957 6 8 6C8.53043 6 9.03914 6.21071 9.41421 6.58579C9.78929 6.96086 10 7.46957 10 8Z"
-                                        fill="#90A4AE"
-                                    />
-                                </svg>
-                                <Typography variant="small" className="font-medium">
-                                    Help
-                                </Typography>
-                            </MenuItem> */}
                             <hr className="my-2 border-blue-gray-50" />
                             <MenuItem className="flex items-center gap-2 " onClick={handleLogout}>
                                 <svg

@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import useAuthAxios from "@/lib/authAxios";
 import { format, getISOWeek, getYear, startOfWeek, endOfWeek } from "date-fns"; 
 import { ListBulletIcon, UserGroupIcon, UserIcon } from "@heroicons/react/24/solid";
+import { toast } from "react-toastify";
 
 export function Home() {
 	const userData = useSelector((state) => state.auth.user);
@@ -37,6 +38,7 @@ export function Home() {
 	const [weekOffset, setWeekOffset] = useState(0);
 	const [tasks, setTasks] = useState([]); 
 	const [totalEmployees, setTotalEmployees] = useState(0); 
+	const [lastMonthPayout, setLastMonthPayout] = useState({ total: 0, month: '' });
 
 	if (!userData || null === userData) {
 		dispatch(logout);
@@ -126,25 +128,46 @@ export function Home() {
 
 	const fetchTotalEmployees = async () => {
 		try {
-			const response = await axiosInstance.post(
+			const response = await axiosInstance.get(
 				`/companies/${userData.company.id}/employees`,
 			);
-
+			console.log(response.data.data, response?.data.success)
 			if (response?.data.success) {
-				setTotalEmployees(response.data.data.length);
+				let emps = response.data.data.filter((emp) => emp.role !== 'manager');
+				console.log(response.data.data, response?.data.success, emps.length)
+
+				setTotalEmployees(emps?.length);
 				// toast.success("Task marked as complete!");
 				// fetchWeeklyTasks(); // Refresh tasks after marking complete
 
 			}
 		} catch (error) {
 			console.error("Error marking task as complete:", error);
-			toast.error("Failed to mark task as complete.");
+			// toast.error("Failed to mark task as complete.");
 		}
 	}
 
-	const fetchLastMonthPayout = async () => { 
+	const fetchLastMonthPayout = async () => {
+		try {
+			const response = await axiosInstance.post(
+				`/companies/${userData.company.id}/payroll/last-month`
+			);
+			console.log('Last Month Payout:', response.data);
+			
+			if (response?.data.success) {
+				const { total_payout, month } = response.data.data;
+				console.log('Last Month Payout:', total_payout, 'Month:', month);
 
-	}
+				// Update the state with the payout and month
+				setLastMonthPayout({ total: total_payout, month });
+			} else {
+				console.error('Failed to fetch last month payout:', response?.data.error);
+			}
+		} catch (error) {
+			console.error('Error fetching last month payout:', error);
+			toast.error('Failed to fetch last month payout.');
+		}
+	};
 
 	const markTaskComplete = async (taskId) => {
 		try {
@@ -165,14 +188,14 @@ export function Home() {
 			toast.error("Failed to mark task as complete.");
 		}
 	};
-
-	console.log(userData)
+ 
 
 	useEffect(() => {
 		fetchEmployeeSchedule();
 		if(userData.role == 'manager') {
 			fetchCompanyWeeklyTasks();
 			fetchTotalEmployees();
+			fetchLastMonthPayout();
 		}
 		else {
 			fetchWeeklyTasks(); 
@@ -204,7 +227,7 @@ export function Home() {
 						icon={<UserGroupIcon className="w-6 h-6"/>}
 						value={loading ? 
 							<div className="flex justify-end mt-1"><Spinner className="block"/></div>
-							: (tasks ? tasks.length : 0)}
+							: (totalEmployees ? totalEmployees : 0)}
 					/>
 					<StatisticsCard
 						key="Payout Last Month" 
@@ -213,7 +236,7 @@ export function Home() {
 						icon={<UserGroupIcon className="w-6 h-6"/>}
 						value={loading ? 
 							<div className="flex justify-end mt-1"><Spinner className="block"/></div>
-							: (tasks ? tasks.length : 0)}
+							: (lastMonthPayout ? ` € ${lastMonthPayout.total}  ` : 0)}
 					/>
 					 
 				</div>

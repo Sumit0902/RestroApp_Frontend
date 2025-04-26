@@ -9,6 +9,7 @@ import useAuthAxios from '@/lib/authAxios';
 import { Button, Card, CardBody, CardHeader, Dialog, DialogBody, DialogFooter, DialogHeader, Option, Popover, PopoverContent, PopoverHandler, Select, Spinner, Typography } from '@material-tailwind/react';
 import { toast } from 'react-toastify';
 import { InformationCircleIcon } from '@heroicons/react/24/solid';
+import { persistor } from '@/store/store';
  
 
 
@@ -109,7 +110,7 @@ export default function Schedules() {
             });
             setSchedules(response.data.data);
         } catch (error) {
-            if (error.response?.status == 403) {
+            if (error.response?.status == 401 || error.response?.status == 403) {
                 toast.error('Your session has expired. please login again');
                 dispatch(logout);
                 setTimeout(() => {
@@ -241,9 +242,10 @@ export default function Schedules() {
             toast.success('Schedule added successfully');
         } catch (error) {
             console.error('Error adding schedule:',error,  error.response?.status);
-            if (error.response?.status === 403) {
+            if (error.response?.status === 403 || error.response?.status === 401) {
                 toast.error('Your session has expired. Please log in again.');
                 setTimeout(() => {
+                     persistor.purge();
                     navigate('/');
                 }, 3000);
             } else {

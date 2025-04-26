@@ -1,4 +1,5 @@
 import { logout } from "@/store/features/auth/AuthSlice";
+import { persistor } from "@/store/store";
 import { clsx } from "clsx";
 import { format, parse } from "date-fns";
 import { toast } from "react-toastify";
@@ -45,7 +46,7 @@ export const handleAuthError = (error, dispatch, navigate) => {
   const errorStatus = error.response?.status;
   if (errorStatus === 403 || errorStatus === 401) {
     toast.error('Your session has expired. Please log in again.');
-    dispatch(logout());
+    persistor.purge();
     setTimeout(() => {
       navigate('/');
     }, 3000);
