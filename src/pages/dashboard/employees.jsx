@@ -105,6 +105,7 @@ const Employees = () => {
     // Edit Employee
     const handleEditEmployee = async () => {
         try {
+            console.log(employeeForm)
             setFormSubmitting(true);
             setFormError(""); // Clear previous errors
             await axiosInstance.post(

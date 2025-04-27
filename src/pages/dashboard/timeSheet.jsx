@@ -197,9 +197,9 @@ function TimeSheet() {
       <Card className="rounded-md" style={{ backgroundColor: 'var(--color-background)', borderRadius: 'var(--radius-4)' }}>
         <div className='flex justify-between items-center p-4' style={{ borderBottom: '1px solid var(--gray-5)' }}>
           <Typography className='text-lg font-bold'>TimeSheet</Typography>
-          <Button className="block sm:hidden">
+          {/* <Button className="block sm:hidden">
             <Bars3Icon />
-          </Button>
+          </Button> */}
         </div>
         <div className='relative overflow-y-auto'>
           <Card className='h-full p-4'>
@@ -222,10 +222,10 @@ function TimeSheet() {
                 <h1>Week {selectedWeek + 1}</h1>
                 <button onClick={nextWeek}><ChevronRight title="Next Week" className='mx-8 w-12 h-12' /></button>
               </div>
-              <div className="overflow-x-auto">
-                <div className="flex flex-col gap-8">
+              <div className=" ">
+                <div className="flex flex-col gap-8 w-full">
                   {userData && userData.role === 'manager' ? (
-                    <Card className="p-4 w-full max-w-[calc(100vw_-_350px)] overflow-x-auto">
+                    <Card className="p-4 w-full max-w-full sm:max-w-[calc(100vw_-_350px)] overflow-x-auto">
                       <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                         <thead>
                           <tr>
@@ -239,56 +239,57 @@ function TimeSheet() {
                           </tr>
                         </thead>
                         <tbody>
-  {attendanceData.map((entry) => {
-      let totalHours = 0;  
-      let totalMinutes = 0;
+                          {attendanceData.map((entry) => {
+                              let totalHours = 0;  
+                              let totalMinutes = 0;
 
-      return (
-        <tr key={entry.user.id}> 
-          <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-            {entry.user.firstname} {entry.user.lastname}
-          </td> 
-          {weeks[selectedWeek].map((day) => {
-            const date = format(day, 'yyyy-MM-dd');  
-            const record = entry.attendance[date] || { check_in: null, check_out: null }; 
-            const hoursString = calculateHours(record.check_in, record.check_out);  
-            const [hours, minutes] = hoursString.match(/\d+/g).map(Number); 
+                              return (
+                                <tr key={entry.user.id}> 
+                                  <td className='border border-gray-200 p-4 min-w-[200px]'>
+                                    {entry.user.firstname} {entry.user.lastname}
+                                  </td> 
+                                  {weeks[selectedWeek].map((day) => {
+                                    const date = format(day, 'yyyy-MM-dd');  
+                                    const record = entry.attendance[date] || { check_in: null, check_out: null }; 
+                                    const hoursString = calculateHours(record.check_in, record.check_out);  
+                                    const [hours, minutes] = hoursString.match(/\d+/g).map(Number); 
 
-            // Accumulate total weekly hours & minutes
-            totalHours += hours;
-            totalMinutes += minutes;
+                                    // Accumulate total weekly hours & minutes
+                                    totalHours += hours;
+                                    totalMinutes += minutes;
 
-            // Convert excess minutes into hours immediately
-            totalHours += Math.floor(totalMinutes / 60);
-            totalMinutes %= 60;
+                                    // Convert excess minutes into hours immediately
+                                    totalHours += Math.floor(totalMinutes / 60);
+                                    totalMinutes %= 60;
 
-            return (
-              <td
-                key={day}
-                style={{
-                  border: '1px solid #ddd',
-                  padding: '8px', 
-                  maxWidth: '80px',
-                }}
-              >
-                {record.check_in ? (
-                  <>
-                    <div>Check in: <span className='font-bold'>{format(new Date(`${date}T${record.check_in}`), 'hh:mm a')}</span></div>
-                    <div>Check out: <span className='font-bold'>{record.check_out ? format(new Date(`${date}T${record.check_out}`), 'hh:mm a') : 'N/A'}</span></div>
-                  </>
-                ) : (
-                  '-'  
-                )}
-              </td>
-            );
-          })} 
-          <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-            {totalHours}H {totalMinutes}M
-          </td> {/* ✅ Display the full accumulated weekly total here */}
-        </tr>
-      );
-  })}
-</tbody>
+                                    return (
+                                      <td
+                                        key={day}
+                                        style={{
+                                          border: '1px solid #ddd',
+                                          padding: '8px', 
+                                          maxWidth: '80px',
+                                        }}
+                                        className='border border-gray-300 min-w-[200px] w-full'
+                                      >
+                                        {record.check_in ? (
+                                          <>
+                                            <div>Check in: <span className='font-bold'>{format(new Date(`${date}T${record.check_in}`), 'hh:mm a')}</span></div>
+                                            <div>Check out: <span className='font-bold'>{record.check_out ? format(new Date(`${date}T${record.check_out}`), 'hh:mm a') : 'N/A'}</span></div>
+                                          </>
+                                        ) : (
+                                          '-'  
+                                        )}
+                                      </td>
+                                    );
+                                  })} 
+                                  <td className="min-w-[100px] border border-e-gray-100 p-4" >
+                                    {totalHours}H {totalMinutes}M
+                                  </td> {/* ✅ Display the full accumulated weekly total here */}
+                                </tr>
+                              );
+                          })}
+                        </tbody>
                       </table>
                     </Card>
                   ) : (

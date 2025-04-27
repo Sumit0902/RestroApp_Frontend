@@ -84,13 +84,13 @@ const MySchedule = () => {
     return (
       <thead>
         <tr>
-          <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
             Employee
           </th>
           {weekDays.map((date) => (
             <th
               key={date}
-              className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
             >
               {format(date, "EEE, dd MMM")}
             </th>

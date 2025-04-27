@@ -311,7 +311,7 @@ const LeaveManagement = () => {
 					</div>
 				}
 			</CardHeader>
-			<CardBody>
+			<CardBody className='overflow-scroll '>
 				<table className="w-full table-auto">
 					<thead>
 						{userData.role == 'manager' ?

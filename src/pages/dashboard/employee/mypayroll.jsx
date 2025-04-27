@@ -64,16 +64,16 @@ const MyPayroll = () => {
           <table className="mt-4 w-full min-w-max table-auto text-left">
             <thead>
               <tr>
-                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4">
+                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider px-4">
                   Month
                 </th>
-                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4">
+                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider px-4">
                   Wage Rate
                 </th>
-                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4">
+                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider px-4">
                   Total Amount
                 </th>
-                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4">
+                <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider px-4">
                   Actions
                 </th>
               </tr>

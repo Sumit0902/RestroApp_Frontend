@@ -140,13 +140,13 @@ export default function Schedule() {
         return (
             <thead>
                 <tr>
-                    <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         User
                     </th>
                     {weekDays.map((day) => (
                         <th
                             key={day}
-                            className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                         >
                             {day}
                         </th>

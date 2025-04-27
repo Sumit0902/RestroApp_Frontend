@@ -196,7 +196,7 @@ export default function Shifts() {
 					</Button>
 				</div>
 
-				<div className="space-y-4 w-full">
+				<div className="space-y-4 w-full overflow-auto">
 
 
 					<table className='w-full mt-4'>

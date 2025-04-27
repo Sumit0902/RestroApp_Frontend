@@ -354,13 +354,13 @@ export default function Schedules() {
         return (
             <thead>
                 <tr>
-                    <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]">
+                    <th className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider w-[25%]">
                         User
                     </th>
                     {weekDays.map((date) => (
 						<th
 							key={date}
-							className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+							className="px-2 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
 						>
 							{format(date, "EEE, dd MMM")}
 						</th>
@@ -406,7 +406,7 @@ export default function Schedules() {
                                 >
                                     Add Schedule
                                 </Button>
-                                <div className="flex justify-end gap-4">
+                                <div className="flex justify-center sm:justify-end gap-4">
                                     <Button onClick={() => setWeekOffset(prev => prev - 1)}>Previous Week</Button>
                                     <Button onClick={() => setWeekOffset(prev => prev + 1)}>Next Week</Button>
                                 </div>
@@ -418,7 +418,7 @@ export default function Schedules() {
                 </div>
             </CardHeader>
             <CardBody>
-                <div className=" ">
+                <div className="overflow-auto ">
                     <table className="min-w-full divide-y divide-gray-200">
                         <TableHeader />
                         <tbody className="bg-white divide-y divide-gray-200">

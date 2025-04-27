@@ -210,7 +210,7 @@ const CompanyProfile = () => {
 						onSubmit={handleSubmit}
 						className='space-y-4 flex flex-col'
 					>
-						<div className="flex items-center space-x-4">
+						<div className="flex flex-col sm:flex-row gap-y-4 sm:gap-y-0 items-center space-x-4">
 							
 							{companyData.logoPreview ? (
 								<img
@@ -244,161 +244,163 @@ const CompanyProfile = () => {
 								)}
 							</div>
 						</div>
-						<div className='grid grid-cols-2 gap-4'>
-							<div>
-								
-								<Input
-									id='company_name'
-									name='company_name'
-									value={companyData.company_name}
-									onChange={handleInputChange}
-									label='Company Name'
-								/>
-							</div>
-							<div>
-								<Input
-									id='email'
-									name='email'
-									type='email'
-									value={companyData.email}
-									onChange={handleInputChange}
-									label='Email'
-								/>
-							</div>
-							<div>
-								 
-								<Input
-									id='phone'
-									name='phone'
-									type='tel'
-									value={companyData.phone}
-									onChange={handleInputChange}
-									label='Phone'
-								/>
-							</div>
-							<div>
-							 
-								<Input
-									id='company_zip'
-									name='company_zip'
-									value={companyData.company_zip}
-									onChange={handleInputChange}
-								/>
-							</div>
-						</div>
-						<div>
-							 
-							<Textarea
-								label="About Company" 
-								rows={8}
-								id='company_about'
-								name='company_about'
-								value={companyData.company_about}
-								onChange={handleInputChange}
-							/>
-						</div>
-						<div>
-						 
-							<Input
-								id='company_address1'
-								name='company_address1'
-								value={companyData.company_address1}
-								label="Address Line 1" 
-								onChange={handleInputChange}
-							/>
-						</div>
-						<div>
-							<Input
-								id='company_address2'
-								name='company_address2'
-								value={companyData.company_address2}
-								label="Address Line 2" 
-								onChange={handleInputChange}
-							/>
-						</div>
-						<div className='grid grid-cols-2 gap-4'>
-							<div>
-								<Input
-									id='company_city'
-									name='company_city'
-									value={companyData.company_city}
-									label="City" 
-									onChange={handleInputChange}
-								/>
-							</div>
-							<div> 
-								<Input
-									id='company_state'
-									name='company_state'
-									value={companyData.company_state}
-									label="State" 
-									onChange={handleInputChange}
-								/>
-							</div>
-						</div>
-						<div className='grid grid-cols-2 gap-4'>
-							<div>
-								<Typography
-									className='block text-left'
-									htmlFor='company_days'
-								>
-									Operational Days
-								</Typography>
+						<div className='flex flex-col space-y-4'>
+							<div className='my-4 grid grid-cols-1 sm:grid-cols-2 gap-4'>
 								<div>
-									{weekdays.map((day, index) => (
-										<label key={index} className="flex items-center space-x-2">
-											<input
-												type="checkbox"
-												value={index}
-												checked={companyData.workingDays?.includes(index)}
-												onChange={() => handleCheckboxChange(index)}
-											/>
-											<span>{day}</span>
-										</label>
-									))}
-								</div>
-							</div> 
-						</div>
-						<div>
-							<Typography className="block text-left mb-2" htmlFor="overtime_rate">
-								Overtime Rate
-							</Typography>
-							<div className="flex items-center space-x-4">
-								{/* Rate Type Select */}
-								<div className="flex-1">
-									<Select
-										id="rate_type"
-										name="ot_type"
-										value={companyData.ot_type}
-										onChange={selectChange}
-										label="Rate Type"
-									>
-										<Option value="fixed">Fixed</Option>
-										<Option value="percentage">Percentage</Option>
-									</Select>
-								</div>
-
-								{/* Overtime Rate Input */}
-								<div className="flex-1">
+									
 									<Input
-										id="overtime_rate"
-										name="ot_rate"
-										type="number"
-										step="0.01"
-										value={companyData.ot_rate}
+										id='company_name'
+										name='company_name'
+										value={companyData.company_name}
 										onChange={handleInputChange}
-										label={
-											companyData?.ot_type === "percentage"
-												? "Overtime Rate (%)"
-												: "Overtime Rate (€)"
-										}
-										min={0.00}
-										max={companyData?.ot_type === "percentage" ? 100 : 999999}
+										label='Company Name'
+									/>
+								</div>
+								<div>
+									<Input
+										id='email'
+										name='email'
+										type='email'
+										value={companyData.email}
+										onChange={handleInputChange}
+										label='Email'
+									/>
+								</div>
+								<div>
+									 
+									<Input
+										id='phone'
+										name='phone'
+										type='tel'
+										value={companyData.phone}
+										onChange={handleInputChange}
+										label='Phone'
+									/>
+								</div>
+								<div>
+								 
+									<Input
+										id='company_zip'
+										name='company_zip'
+										value={companyData.company_zip}
+										onChange={handleInputChange}
 									/>
 								</div>
 							</div>
+							<div>
+								 
+								<Textarea
+									label="About Company" 
+									rows={8}
+									id='company_about'
+									name='company_about'
+									value={companyData.company_about}
+									onChange={handleInputChange}
+								/>
+							</div>
+							<div>
+							 
+								<Input
+									id='company_address1'
+									name='company_address1'
+									value={companyData.company_address1}
+									label="Address Line 1" 
+									onChange={handleInputChange}
+								/>
+							</div>
+							<div>
+								<Input
+									id='company_address2'
+									name='company_address2'
+									value={companyData.company_address2}
+									label="Address Line 2" 
+									onChange={handleInputChange}
+								/>
+							</div>
+							<div className='grid grid-cols-1 sm:grid-cols-2  gap-4'>
+								<div>
+									<Input
+										id='company_city'
+										name='company_city'
+										value={companyData.company_city}
+										label="City" 
+										onChange={handleInputChange}
+									/>
+								</div>
+								<div> 
+									<Input
+										id='company_state'
+										name='company_state'
+										value={companyData.company_state}
+										label="State" 
+										onChange={handleInputChange}
+									/>
+								</div>
+							</div>
+							<div className='grid grid-cols-1 sm:grid-cols-2  gap-4'>
+								<div>
+									<Typography
+										className='block text-left'
+										htmlFor='company_days'
+									>
+										Operational Days
+									</Typography>
+									<div>
+										{weekdays.map((day, index) => (
+											<label key={index} className="flex items-center space-x-2">
+												<input
+													type="checkbox"
+													value={index}
+													checked={companyData.workingDays?.includes(index)}
+													onChange={() => handleCheckboxChange(index)}
+												/>
+												<span>{day}</span>
+											</label>
+										))}
+									</div>
+								</div> 
+							</div>
+							<div className='flex flex-col gap-2'>
+								<Typography className="block text-left " htmlFor="overtime_rate">
+									Overtime Rate
+								</Typography>
+								<div className="flex flex-col items-center  ">
+									{/* Rate Type Select */}
+									<div className="flex-1 w-full my-2">
+										<Select
+											id="rate_type"
+											name="ot_type"
+											value={companyData.ot_type}
+											onChange={selectChange}
+											label="Rate Type"
+										>
+											<Option value="fixed">Fixed</Option>
+											<Option value="percentage">Percentage</Option>
+										</Select>
+									</div>
+	
+									{/* Overtime Rate Input */}
+									<div className="flex-1 w-full my-2">
+										<Input
+											id="overtime_rate"
+											name="ot_rate"
+											type="number"
+											step="0.01"
+											value={companyData.ot_rate}
+											onChange={handleInputChange}
+											label={
+												companyData?.ot_type === "percentage"
+													? "Overtime Rate (%)"
+													: "Overtime Rate (€)"
+											}
+											min={0.00}
+											max={companyData?.ot_type === "percentage" ? 100 : 999999}
+										/>
+									</div>
+								</div>
+							</div>
+							<Button type='submit'>Save Changes</Button>
 						</div>
-						<Button type='submit'>Save Changes</Button>
 					</form>
 				</div> 
 			</Card>

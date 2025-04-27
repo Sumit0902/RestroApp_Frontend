@@ -149,31 +149,31 @@ export default function TaskList() {
                     <Button onClick={() => setIsOpen(true)}>Add Task</Button>
                 </div>
             </CardHeader>
-            <CardBody>
+            <CardBody className="overflow-scroll h-[calc(100vh-200px)]">
                 {loading ? (
                     <div className="text-center">Loading...</div>
                 ) : (
-                    <table className="table-auto w-full">
+                    <table className="table-auto w-full divide-gray-200">
                         <thead>
                             <tr>
-                                <th className="w-[20%] p-4 text-left">Title</th>
-                                <th className="w-[30%] p-4 text-left">Description</th>
-                                <th className="w-[10%] p-4 text-left">Assignee</th>
-                                <th className="w-[10%] p-4 text-left">Status</th>
-                                <th className="w-[10%] p-4 text-left">Assigned Date</th>
-                                <th className="w-[20%] p-4 text-left">Action</th>
+                                <th className="w-[20%] p-4 text-left px-2 py-3 bg-gray-50 text-xs font-medium text-gray-700 uppercase tracking-wider">Title</th>
+                                <th className="w-[30%] p-4 text-left px-2 py-3 bg-gray-50 text-xs font-medium text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="w-[10%] p-4 text-left px-2 py-3 bg-gray-50 text-xs font-medium text-gray-700 uppercase tracking-wider">Assignee</th>
+                                <th className="w-[10%] p-4 text-left px-2 py-3 bg-gray-50 text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="w-[10%] p-4 text-left px-2 py-3 bg-gray-50 text-xs font-medium text-gray-700 uppercase tracking-wider">Assigned Date</th>
+                                <th className="w-[20%] p-4 text-left px-2 py-3 bg-gray-50 text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {tasks.length > 0 ? (
                                 tasks.map((task) => (
                                     <tr key={task.id}>
-                                        <td className="p-4">{task.name}</td>
-                                        <td className="p-4">{task.description}</td>
-                                        <td className="p-4">{task.user ? `${task.user?.firstname} ${task.user?.lastname}` : 'Unassigned'}</td>
-                                        <td className="p-4 capitalize">{task.status}</td>
-                                        <td className="p-4 capitalize">{format(task.created_at, 'dd-MM-yyy')}</td>
-                                        <td className="p-4">
+                                        <td className="p-4 px-2 py-4 font-medium text-gray-900 border-b">{task.name}</td>
+                                        <td className="p-4 px-2 py-4 font-medium text-gray-900 border-b">{task.description}</td>
+                                        <td className="p-4 px-2 py-4 font-medium text-gray-900 border-b">{task.user ? `${task.user?.firstname} ${task.user?.lastname}` : 'Unassigned'}</td>
+                                        <td className="p-4 px-2 py-4 font-medium text-gray-900 border-b capitalize">{task.status}</td>
+                                        <td className="p-4 px-2 py-4 font-medium text-gray-900 border-b capitalize">{format(task.created_at, 'dd-MM-yyy')}</td>
+                                        <td className="p-4 px-2 py-4 font-medium text-gray-900 border-b">
                                             <div className="flex gap-2">
                                                 <Button
                                                     color="gray"
