@@ -19,14 +19,13 @@ const MyTimesheet = () => {
 
   const timeZone = import.meta.env.VITE_TIMEZONE || "UTC"; // Read timezone from .env
 
-  // Calculate the start and end of the current week in the specified timezone
-  const weekStart = toZonedTime(startOfWeek(currentWeek, { weekStartsOn: 1 }), timeZone); // Monday
-  const weekEnd = toZonedTime(endOfWeek(currentWeek, { weekStartsOn: 1 }), timeZone); // Sunday
+  // const weekStart = toZonedTime(startOfWeek(currentWeek, { weekStartsOn: 1 }), timeZone); // Monday
+  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday start
+  const weekEnd = toZonedTime(addDays(weekStart, 6), timeZone); // Sunday
 
   const weekDates = Array.from({ length: 7 }, (_, i) =>
-    formatWithTZ(addDays(weekStart, i), "yyyy-MM-dd", { timeZone })
+      formatWithTZ(addDays(weekStart, i), "yyyy-MM-dd", { timeZone })
   );
-
   // Fetch timesheet data for the current week
   const fetchTimesheetData = async () => {
     setLoading(true);
@@ -229,6 +228,7 @@ const MyTimesheet = () => {
             </thead>
             <tbody>
               {weekDates.map((date) => {
+                console.log(weekDates, date, 'sdfsdfsdf')
                 const record = timesheetData.find((entry) =>
                   entry.check_in.startsWith(date)
                 );

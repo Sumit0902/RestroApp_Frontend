@@ -157,12 +157,13 @@ export default function Shifts() {
 		try {
 			let companyId = userData.company.id;
 			if (currentShift) {
-				const response = await axiosInstance.patch(
+				const response = await axiosInstance.post(
 					`/companies/${companyId}/shifts/${currentShift.id}/update`,
 					shiftData
 				);
 				const updatedShift = response.data.data;
 				console.log('after update shift', shiftData);
+				toast.success('Shift updated successfully!');
 				setShifts(shifts.map((shift) => (shift.id === currentShift.id ? updatedShift : shift)));
 
 			} else {
@@ -226,11 +227,11 @@ export default function Shifts() {
 											<td className="text-center p-4">{format(parse(shift.end_time, 'HH:mm:ss', new Date()), 'hh:mm a')}</td>
 											{/* <TableCell>{shift.description}</TableCell> */}
 											<td className='w-[20%] flex text-center p-4 gap-4'>
-												<Button   onClick={() => handleOpenModal(shift)}>
-													<Edit className="h-4 w-4" />
+												<Button className='w-12 h-auto flex items-center justify-center '   onClick={() => handleOpenModal(shift)}>
+													 Edit
 												</Button>
 												<Button color="red" onClick={() => handleOpenDeleteModal(shift)}>
-													<TrashIcon className="h-4 w-4" />
+													Delete
 												</Button>
 											</td>
 										</tr>
