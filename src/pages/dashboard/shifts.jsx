@@ -124,7 +124,11 @@ export default function Shifts() {
 		formData.append('end_time', endTime);
 		const shiftData = Object.fromEntries(formData.entries());
 	 
-
+		if(!shiftData.name || !shiftData.start_time || !shiftData.end_time) {
+			toast.error('All fields are required');
+			setformSubmiting(false);
+			return false
+		}
 		if (shiftData.start_time) {
 			if (shiftData.start_time.length === 5) {
 				shiftData.start_time += ":00";
@@ -174,8 +178,10 @@ export default function Shifts() {
 			handleCloseModal();
 		} catch (error) {
 			setLoading(false);
-			console.error("Error saving shift:", error.response?.data?.error || error.message);
-			alert("An error occurred while saving the shift. Please try again.");
+			setformSubmiting(false);
+			console.error("Error saving shift:", error.response?.data?.error || error.message, error.response.data);
+			toast.error("Error saving shift:"+ error.response?.data?.message);
+			// alert("An error occurred while saving the shift. Please try again.");
 		}
 	};
 

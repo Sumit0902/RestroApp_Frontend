@@ -146,14 +146,6 @@ function TimeSheet() {
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  // const calculateHours = (checkIn, checkOut) => {
-  //   if (!checkIn || !checkOut) return 0;
-  //   const [inH, inM] = checkIn.split(':').map(Number);
-  //   const [outH, outM] = checkOut.split(':').map(Number);
-  //   const inTime = inH + inM / 60;
-  //   const outTime = outH + outM / 60;
-  //   return (outTime - inTime).toFixed(1);
-  // };
 
   const daysArray = generateDaysArray(currentMonth.getFullYear(), currentMonth.getMonth());
 
@@ -218,10 +210,12 @@ function TimeSheet() {
                   <h1>{formattedMonth}</h1>
                   <button onClick={nextMonth}><ChevronRight title="Next Month" className='mx-8 w-12 h-12' /></button>
                 </div>
+                {userData.role !== 'manager' && 
                 <div className='flex gap-4'>
                   <Button onClick={handleCheckIn}>Check In</Button>
                   <Button onClick={handleCheckOut}>Check Out</Button>
                 </div>
+                }
               </div>
               <div className="flex justify-center items-center">
                 <button onClick={prevWeek}><ChevronLeft title="Previous Week" className='mx-8 w-12 h-12' /></button>

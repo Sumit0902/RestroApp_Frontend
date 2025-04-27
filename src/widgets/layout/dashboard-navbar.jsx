@@ -259,11 +259,11 @@ export function DashboardNavbar() {
                                 )}
                             </IconButton>
                         </MenuHandler>
-                        <MenuList className="w-max border-0 max-h-96">
+                        <MenuList className=" border-0 max-h-96   w-96 overflow-y-auto">
                             {notifications?.length > 0 ?
                                 notifications.map((notif, k) => { 
                                     return (
-                                        <MenuItem key={k} onClick={() => markAsRead(notif.id) } className={`flex items-center my-1 gap-3 min-w-44 ${notif?.is_read ? '' : 'bg-blue-gray-100/50 font-bold'}`}>
+                                        <MenuItem key={k} onClick={() => markAsRead(notif.id) } className={`flex items-center my-1 gap-3 min-w-44 border border-gray-300 ${notif?.is_read ? '' : 'bg-blue-gray-100/50 font-bold'}`}>
                                             <div>
                                                 <Typography
                                                     variant="small"

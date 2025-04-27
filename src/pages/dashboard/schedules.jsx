@@ -41,7 +41,6 @@ export default function Schedules() {
     const [openEditModal, setOpenEditModal] = useState(false);
   
     const handleOpenAddModal = (employeeId, dayIndex) => {
-		console.log('hdn', employeeId , dayIndex, selDays)
 		if(!openAddModal) {
 			setSelEmployee(employeeId);
             if(isWorkingDay(dayIndex)) {
@@ -64,9 +63,7 @@ export default function Schedules() {
     }
 
     const fetchCompanyEmployees = async () => {
-        console.log('fetching employees 1')
         if (userData) {
-            console.log('fetching employees 2')
             let company_id = userData.company.id;
 
             let employeesResponse = await axiosInstance.get(`/companies/${company_id}/employees`);
@@ -74,29 +71,32 @@ export default function Schedules() {
             let filteredEmployees = employeesResponse.data?.data || [];
             let filteredShifts = shiftsResponse.data?.data || [];
 
-            console.log('empres', employeesResponse, shiftsResponse)
             setEmployees(filteredEmployees);
             setShifts(filteredShifts);
             setIsManager(userData.role === 'manager');
             setLoading(false)
         }
-            console.log('fetching employees 3')
 
     };
 
     const selectedDate = addWeeks(new Date(), weekOffset);
     const weekNumber = getISOWeek(selectedDate);
 
-    const getWeekDays = (weekNumber) => { 
+    const getWeekDays = (weekNumber) => {
+        // Get the start date of the week (Monday as the first day of the week)
         const startDate = startOfWeek(
-            setISOWeek(new Date(getYear(new Date()), 0, 1), weekNumber), 
-            { weekStartsOn: 1 }
-        ); 
+            setISOWeek(new Date(getYear(new Date()), 0, 1), weekNumber),
+            { weekStartsOn: 1 } // Ensure the week starts on Monday
+        );
+    
+        // Generate the week days starting from Monday
         const weekDays = [...Array(7)].map((_, i) => addDays(startDate, i));
-        return weekDays;
+        return weekDays; // Return an array of date objects
     };
+    
 
     const weekDays = getWeekDays(weekNumber)
+    
     const fetchSchedules = async () => {
         let company_id = userData.company.id;
         const year = getYear(selectedDate);
@@ -126,11 +126,9 @@ export default function Schedules() {
         fetchSchedules();
 
         let compDays = userData?.company.workingDays || []; 
-        console.log(compDays, 'comp days', compDays.length === 0)
         if (compDays.length !== 0) {
             setOpDays(convertDaysToArray(compDays))
         }
-        console.log('week nu', weekNumber)
     }, [weekOffset]);
 
  
@@ -161,8 +159,9 @@ export default function Schedules() {
     }
 
     function isWorkingDay(dateString) {
-        const dayNumber = getConsistentDayNumber(dateString);
+        const dayNumber = getConsistentDayNumber(dateString) - 1  < 0 ? 6 : getConsistentDayNumber(dateString) - 1; // Adjust for Sunday
         return opDats.includes(dayNumber);
+
     }
 
     function formatDateWithDay(dateString) {
@@ -179,19 +178,16 @@ export default function Schedules() {
 
     const handleCheckboxChange = (date) => {
     if (!isWorkingDay(date)) {
-        console.log('Not a working day');
         return; // Prevent changes for non-working days
     }
 
     const isoDate = toUTCDate(date).toISOString().split('T')[0]; // Convert to ISO string format
-    console.log('Working day:', isoDate);
 
     setSelDays((prev) => {
         const isSelected = prev.includes(isoDate);
         const updatedDays = isSelected
             ? prev.filter((d) => d !== isoDate) // Remove the day if already selected
             : [...prev, isoDate]; // Add the day if not selected
-        console.log('Updated days:', updatedDays);
         return updatedDays;
     });
 };
@@ -224,10 +220,8 @@ export default function Schedules() {
                 selectedDays: utcSelectedDays, // Selected days in ISO format
             };
 
-            console.log("Payload being sent:", payload);
 
             const response = await axiosInstance.post(`/companies/${company_id}/schedules/add`, payload);
-            console.log('Schedule added successfully:', response.data);
 
             // Reset form fields after successful submission
             setSelEmployee("");
@@ -284,11 +278,8 @@ export default function Schedules() {
                 selectedDays: utcSelectedDays, // Only ISO date strings sent to backend
             };
     
-            console.log("Payload being sent:", payload);
-            console.log("Day numbers (for local reference):", dayNumbers);
     
             const response = await axiosInstance.post(`/companies/${company_id}/schedules/add`, payload);
-            console.log('Schedule added successfully:', response.data);
             setSelEmployee("");
             setSelShift("");
             setSelDays([]);
@@ -453,7 +444,6 @@ export default function Schedules() {
                                                     const formattedDay = format(day, "yyyy-MM-dd");
                                                     
                                                     const dayShift = shiftData?.shifts?.find((shift) => shift.date === formattedDay);
-													console.log(dayShift, shiftData?.shifts)
                                                     return (
                                                         <td key={index} className="group px-2 py-4 border-b w-[9rem]">
                                                             {dayShift ? (
@@ -495,7 +485,6 @@ export default function Schedules() {
                         <select 
                             className='!mt-0 !mb-4 w-full rounded-lg border border-gray-300 p-2.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                             onChange={(e) => {
-                                console.log("Selected Employee ID:", e.target.value); // Debugging
                                 setSelEmployee(e.target.value);
                               }} 
                             selected={selEmployee} 
@@ -533,8 +522,9 @@ export default function Schedules() {
                         <div className="space-y-2">
                             <p className="font-medium text-gray-700">Select Days:</p>
                             <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
-                                {Object.entries(weekDays).map(([day, date]) => {
-                                        // console.log('wdd', {'wd' : weekDays, 'day' : day, 'date' : date})
+                                {Object.entries(weekDays).map(( [day, date], k) => {
+                                        //  console.log('wdd', {'wd' : selDays, 'day' : toUTCDate(date).toISOString().split('T'), 'date' : date, 'd':  opDats, 'l':k})
+                                        
                                         return (
                                         <label key={day} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
                                             <input

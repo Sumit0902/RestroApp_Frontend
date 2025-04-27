@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react'; 
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { logout } from '@/store/features/auth/AuthSlice.js';
+import { logout, updateUserCompany } from '@/store/features/auth/AuthSlice.js';
 import axios from 'axios';
 import useAuthAxios from '@/lib/authAxios';
 import { Button, Card, Input, Textarea, Typography, Select, Option } from '@material-tailwind/react';
@@ -177,6 +177,7 @@ const CompanyProfile = () => {
 				}
 			});
 			console.log('company resp', updateCompanyRes.data.data, updateCompanyRes.data);
+			await dispatch(updateUserCompany(companyId));
 			toast.update(updateToast, { render: "Company Updated successfully", type: "success", isLoading: false, autoClose: 5000 });
 
 		} catch (error) {

@@ -239,7 +239,7 @@ export default function TaskList() {
                                 ))}
                             </select>
                         </label>
-                        <label>
+                        {/* <label>
                             <Typography>Status</Typography>
                             <select
                                 className="border p-2 rounded w-full"
@@ -250,7 +250,7 @@ export default function TaskList() {
                                 <option value="in-progress">In Progress</option>
                                 <option value="completed">Completed</option>
                             </select>
-                        </label>
+                        </label> */}
                     </div>
                 </DialogBody>
                 <DialogFooter>
@@ -302,7 +302,7 @@ export default function TaskList() {
                                 ))}
                             </select>
                         </label>
-                        <label>
+                        {/* <label>
                             <Typography>Status</Typography>
                             <select
                                 className="border p-2 rounded w-full"
@@ -313,7 +313,7 @@ export default function TaskList() {
                                 <option value="in-progress">In Progress</option>
                                 <option value="completed">Completed</option>
                             </select>
-                        </label>
+                        </label> */}
                     </div>
                 </DialogBody>
                 <DialogFooter>

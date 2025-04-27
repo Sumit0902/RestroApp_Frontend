@@ -11,7 +11,7 @@ const initialState = {
     status: 'idle',          
 };
 
-// Login action
+
 export const login = createAsyncThunk(
     'auth/login',
     async (credentials, thunkAPI) => {
@@ -58,29 +58,31 @@ export const verifyTwoFactor = createAsyncThunk(
     }
 );
 
-// export const updateUserProfile = createAsyncThunk(
-//     'auth/updateUserProfile',
-//     async (userId, formdata, thunkAPI) => {
-// 		console.log('redx', userId, formdata)
-//         try {
-//             const response = await axios.post(
-//                 `${import.meta.env.VITE_API_URL}/companies/employee/${data}/update`,
-//                 formData,
-//                 {
-//                     headers: {
-//                         'Content-Type': 'multipart/form-data',
-//                     },
-//                 }
-//             );
-//             return response.data;
-//         } catch (error) {
-//             const errorMessage =
-//                 error.response?.data?.message || 'Failed to update profile';
-//             return thunkAPI.rejectWithValue(errorMessage);
-//         }
-//     }
-// );
+// Update User Company action
+export const updateUserCompany = createAsyncThunk(
+    'auth/updateUserCompany',
+    async (companyId, thunkAPI) => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/companies/${companyId}`, {
+                    headers: {
+                        Authorization: `Bearer ${thunkAPI.getState().auth.user.access_token}`,
+                    },
+                }
+            );
+            console.log('ucp', response.data, thunkAPI);
+            return response.data.data; // Assuming the API returns the updated company object
+        } catch (error) {
+            const errorMessage =
+                error.response?.data?.message || 'Failed to update company data';
+                console.log('ucp', thunkAPI.getState());
+            
+                return thunkAPI.rejectWithValue(errorMessage);
 
+        }
+    }
+);
+ 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -128,6 +130,20 @@ const authSlice = createSlice({
             .addCase(verifyTwoFactor.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;  
+            })
+            .addCase(updateUserCompany.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(updateUserCompany.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                if (state.user) {
+                    state.user.company = action.payload; // Update the company object in the user state
+                }
+                state.error = null;
+            })
+            .addCase(updateUserCompany.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload;
             })
             .addCase(PURGE, () => {
                 return initialState;
